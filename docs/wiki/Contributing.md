@@ -55,4 +55,4 @@ SemVer with a Keep a Changelog `CHANGELOG.md` in every repository; the stack mov
 `docs/` of the hub: `make -C docs` builds the diagrams, the manual and the paper (draw.io and a
 LaTeX installation with latexmk); `make -C docs reference SRC=<dir with the dharma_* checkouts>`
 regenerates the manual's parameter and interface tables from the code. This wiki's sources are in
-`docs/wiki/`.
+`docs/wiki/`; they are also the [documentation site](https://darmawanrobotics.github.io/Dharma/) (`make -C docs site`).

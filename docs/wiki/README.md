@@ -6,6 +6,11 @@ here so they are reviewed and versioned with the code. `Home.md` is the start pa
 (`[Safety](Safety)`). Diagrams are referenced as `images/<name>.svg` and copied from
 `docs/diagrams/svg/` when publishing. This README is not a wiki page.
 
+The same pages are the [documentation site](https://darmawanrobotics.github.io/Dharma/): `docs/site/prepare.py` turns them into MkDocs
+sources (wiki links to page files, diagrams from `docs/diagrams/svg/`) and
+`.github/workflows/docs.yml` deploys it from `main`. Write the pages for the wiki; the site follows
+without changes ([docs/README.md](../README.md#site)).
+
 ## Publish
 
 The wiki is a separate git repository. Create the first page once in the GitHub web interface
