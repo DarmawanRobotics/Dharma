@@ -37,7 +37,9 @@ diagrams/pdf/%.pdf: diagrams/%.drawio
 
 diagrams/svg/%.svg: diagrams/%.drawio
 	@mkdir -p $(@D)
-	$(XVFB) $(DRAWIO) --no-sandbox -x -f svg -o $@ $< 2>/dev/null
+	$(XVFB) $(DRAWIO) --no-sandbox -x -f svg --svg-theme light -o $@ $< 2>/dev/null
+	@# drop the PNG fallbacks of the HTML labels (browsers render the labels themselves)
+	sed -i -E 's#<image [^>]*xlink:href="data:image/png;base64,[^"]*"/>##g' $@
 else
 diagrams:
 	@echo "$(DRAWIO) not found: using the committed diagrams/pdf and diagrams/svg"
