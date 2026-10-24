@@ -276,7 +276,8 @@ give a normal age of about 0.15--0.35~s against a 0.5~s limit, and an unsynchron
 clock adds its offset directly. The follower therefore distinguishes \textsc{tf\_starting},
 \textsc{tf\_stale} and \textsc{tf\_clock} (a pose from the future) and, for ages between
 0.1~s and the limit, predicts the pose forward with the odometry twist instead of stopping.
-The health monitor checks topic rates and header stamp ages (a 10~Hz topic with 2~s old stamps
-is a fault), per-edge TF ages to separate a clock offset (constant age) from load (growing
-age), and requests a reduced speed scale from the mux when sensing degrades.
-\todo{confirm the health checks against the finished dharma\_health 0.2.0}
+The health monitor checks topic rates and header stamp ages read from the serialized messages
+(a 10~Hz topic with 2~s old stamps is a fault), classifies each TF edge's recent ages as a
+source clock offset (late but steady), load (varying) or a stopped publisher, and watches the
+typed statuses, the safety scan, the expected nodes and the computer. Its speed scale for the
+mux is 0 on an error and 0.5 by default while the LiDAR, the estimator or TF is late.
