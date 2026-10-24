@@ -4,6 +4,7 @@
 #   make diagrams   export diagrams/*.drawio to diagrams/pdf (cropped) and diagrams/svg
 #   make manual     build/manual/dharma_manual.pdf
 #   make paper      build/paper/dharma.pdf
+#   make site       build/site: the documentation site (MkDocs, docs/site/requirements.txt)
 #   make reference  regenerate manual/generated (SRC: dir with the dharma_* checkouts)
 #   make clean      remove build/ (the exported diagrams are kept: they are committed)
 #
@@ -14,6 +15,8 @@ DRAWIO ?= drawio
 XVFB ?= xvfb-run -a
 LATEXMK ?= latexmk
 LATEXFLAGS ?= -pdf -interaction=nonstopmode -halt-on-error -file-line-error
+MKDOCS ?= mkdocs
+PYTHON ?= python3
 
 SOURCES := $(wildcard diagrams/*.drawio)
 NAMES := $(notdir $(basename $(SOURCES)))
@@ -25,7 +28,7 @@ COMMON := authors.tex macros.tex
 MANUAL_TEX := manual/dharma_manual.tex $(wildcard manual/chapters/*.tex manual/generated/*.tex)
 PAPER_TEX := paper/dharma.tex $(wildcard paper/sections/*.tex) paper/references.bib
 
-.PHONY: all diagrams manual paper reference clean
+.PHONY: all diagrams manual paper site reference clean
 
 all: diagrams manual paper
 
@@ -55,6 +58,13 @@ build/manual/dharma_manual.pdf: $(MANUAL_TEX) $(COMMON) $(PDFS)
 
 build/paper/dharma.pdf: $(PAPER_TEX) $(COMMON) $(PDFS)
 	cd paper && $(LATEXMK) $(LATEXFLAGS) -outdir=../build/paper dharma.tex
+
+# with the PDFs when they are built (make paper manual site), otherwise linking the published ones
+site:
+	@skip=; for f in build/paper/dharma.pdf build/manual/dharma_manual.pdf; do \
+	  [ -f "$$f" ] || skip=--skip-pdfs; done; echo "$(PYTHON) site/prepare.py $$skip"; \
+	  $(PYTHON) site/prepare.py $$skip
+	$(MKDOCS) build --strict -f site/mkdocs.yml
 
 SRC ?= ../..
 reference:
