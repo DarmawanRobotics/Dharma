@@ -17,7 +17,9 @@ export WS ROS_DISTRO="${ROS_DISTRO:-humble}"
 LAYOUT="${1:-robot}"
 [[ -f "$LAYOUT" ]] || LAYOUT="$WS/scripts/tmux/$LAYOUT.yaml"
 if [[ ! -f "$LAYOUT" ]]; then
-    echo "no layout $LAYOUT (scripts/tmux: $(cd "$WS/scripts/tmux" && ls -- *.yaml | xargs))" >&2
+    layouts=("$WS"/scripts/tmux/*.yaml)
+    layouts=("${layouts[@]##*/}")
+    echo "no layout $LAYOUT (scripts/tmux: ${layouts[*]%.yaml})" >&2
     exit 1
 fi
 command -v tmux > /dev/null || { echo "tmux not found (scripts/setup.sh install tools)" >&2; exit 1; }
