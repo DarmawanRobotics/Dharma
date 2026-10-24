@@ -40,7 +40,8 @@ Public Spaces_: the methods and their evaluation, in the IEEE conference format.
 ## Build them yourself
 
 ```bash
-make -C docs paper manual DRAWIO=nodrawio   # docs/build/paper/dharma.pdf, docs/build/manual/dharma_manual.pdf
+# docs/build/paper/dharma.pdf and docs/build/manual/dharma_manual.pdf
+make -C docs paper manual DRAWIO=nodrawio
 ```
 
 The build needs LaTeX with latexmk and IEEEtran (Ubuntu: `texlive-latex-extra`,

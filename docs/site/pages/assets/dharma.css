@@ -37,6 +37,7 @@
 
 /* landing page */
 .md-typeset .dh-hero {
+  clear: both; /* below the edit button */
   margin: 0 0 1.6rem;
   padding: 1.6rem 1.6rem 1.2rem;
   background: var(--dh-hero-bg);
@@ -55,6 +56,15 @@
 
 .md-typeset .dh-hero img {
   margin: 0.1rem 0;
+}
+
+.md-typeset .dh-hero .md-button {
+  margin: 0.2rem 0.3rem 0.2rem 0;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-button:not(.md-button--primary) {
+  color: var(--md-typeset-a-color);
+  border-color: currentcolor;
 }
 
 .md-typeset .grid > .card .lg {

@@ -1,5 +1,4 @@
 ---
-title: Dharma
 source: ../site/pages/index.md
 hide:
   - navigation
