@@ -2,7 +2,6 @@
 
 The bringup of a robot on the Dharma stack: its robot profile, the per-node overrides of the
 package defaults, and one launch for the whole stack (plus the same stack on the simulator).
-`scripts/init_project.py` renames this package for a product.
 
 ## Files
 

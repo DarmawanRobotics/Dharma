@@ -257,7 +257,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f'rename  {old} -> {new}' + (' (edited)' if text else ''))
     if not args.dry_run:
         apply(root, removals, changes)
-        print(f'{o.name}: done, review with `git status` and commit')
+        print(f'{o.name}: done; `pre-commit run --all-files` (re-pads tables), review, commit')
     return 0
 
 

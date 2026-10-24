@@ -3,10 +3,11 @@
 from pathlib import Path
 
 import pytest
-from robot_bringup.bringup import BringupError
 import yaml
 
 from robot_bringup import bringup
+
+BringupError = bringup.BringupError
 
 CONFIG = Path(__file__).resolve().parents[2] / 'config'
 
