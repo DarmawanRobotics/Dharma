@@ -190,7 +190,7 @@ def interface_block(path: Path) -> str:
     constants, sections = parse_interface(path)
     kind = 'msg' if path.suffix == '.msg' else 'srv'
     out = [
-        f'\\subsection*{{\\code{{{path.stem}}} ({kind})}}\n',
+        f'\\subsection*{{\\texorpdfstring{{\\code{{{path.stem}}}}}{{{path.stem}}} ({kind})}}\n',
         (
             '\\begin{small}\n\\begin{tabularx}{\\textwidth}{@{}p{0.25\\textwidth}'
             'p{0.25\\textwidth}X@{}}\n\\toprule\n'
