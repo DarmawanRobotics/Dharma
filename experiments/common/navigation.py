@@ -2,9 +2,12 @@
 The navigation side as path_follower_node and obstacle_avoidance_node run it, as a rig driver.
 
 The follower core (dharma_navigation Follower) ticks at 20 Hz with the robot pose (the true
-pose by default: localization is not part of E1, E2 and E4), the 360 deg safety scan and the
+pose by default: localization is not part of E1, E2, E4 and E5), the 360 deg safety scan, the
+measured twist, the mux state of control/status (e-stop, REMOTE, navigation armed) and the
 output of the reactive avoidance policy on the front scan, which the bringup always runs (its
-emergency stop holds the follower in every avoidance mode).
+emergency stop holds the follower in every avoidance mode). The policy looks around the
+direction of travel of navigation's last command (backward while reversing on a 360 deg scan),
+as obstacle_avoidance_node does with control/nav_cmd_vel.
 """
 
 from __future__ import annotations
@@ -14,6 +17,7 @@ from dataclasses import replace
 
 from common.rig import Rig
 from dharma_navigation.core.avoidance import POLICIES
+from dharma_navigation.core.avoidance.base import travel_direction
 from dharma_navigation.core.config.avoidance import AvoidanceConfig
 from dharma_navigation.core.config.follower import FollowerConfig
 from dharma_navigation.core.controllers import CONTROLLERS, Command, ControllerLimits
@@ -24,6 +28,7 @@ from dharma_navigation.core.scan import SectorScanData
 from dharma_utils.math import Pose2D
 
 POSE_AGE_SEC = 0.02
+COMMAND_TIMEOUT_SEC = 0.5  # obstacle_avoidance_node: an older nav command is forward travel
 
 
 def follower_config(**changes) -> FollowerConfig:
@@ -62,6 +67,7 @@ class FollowerDriver:
         self.started = False
         self.scan = None
         self.avoidance = None
+        self.last_command = (0.0, -float('inf'))  # vx of control/nav_cmd_vel, time
         self.states: list[tuple[float, FollowerState]] = []
         rig.listeners.append(self.on_scan)
 
@@ -72,13 +78,18 @@ class FollowerDriver:
         self.scan = (sectors.points, sectors.any_blocked, now)
         f = scan.front_layout
         front = SectorScanData.of(f.angle_min, f.increment, f.range_max, scan.front)
-        self.avoidance = (self.policy.update(front), now)
+        vx, at = self.last_command
+        vx = vx if now - at <= COMMAND_TIMEOUT_SEC else 0.0
+        direction = travel_direction(vx, front.points(edges=False).full_circle)
+        self.avoidance = (self.policy.update(front, direction), now)
 
     def __call__(self, rig: Rig, now: float):
         """Run one control tick; return the command to publish (None: nothing)."""
         if now < self.start_sec:
             return None
         pose = self.pose(rig, now)
+        arbiter = rig.mux.arbiter  # control/status
+        self.follower.on_control(arbiter.engaged, rig.mux.remote, arbiter.armed)
         if not self.started:
             ok, _ = self.follower.start(pose)
             self.started = ok
@@ -97,7 +108,10 @@ class FollowerDriver:
         decision = self.follower.tick(inputs)
         self.states.append((now, decision.report.state))
         c = decision.command
-        return None if c is None else (c.vx, c.vy, c.wz)
+        if c is None:
+            return None
+        self.last_command = (c.vx, now)
+        return (c.vx, c.vy, c.wz)
 
     @property
     def state(self) -> FollowerState:
