@@ -147,8 +147,7 @@ def _wall_points(world: World) -> np.ndarray:
     pts = []
     for x0, y0, x1, y1, _ in world.segments:
         n = int(np.hypot(x1 - x0, y1 - y0) / 0.05) + 1
-        pts += [(x, y, 0.0, 1.0) for x, y in zip(np.linspace(x0, x1, n), np.linspace(y0, y1, n),
-                                                 strict=True)]  # fmt: skip
+        pts += [(x, y, 0.0, 1.0) for x, y in zip(np.linspace(x0, x1, n), np.linspace(y0, y1, n))]
     return np.vstack([np.array(pts), world.circles])
 
 

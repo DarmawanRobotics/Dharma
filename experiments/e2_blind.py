@@ -24,6 +24,7 @@ from common.worlds import SEEDS, robot, world
 import numpy as np
 
 from dharma_sim.core.scenario import Dropout, Scenario
+from dharma_utils.math import default_rng
 
 KINDS = ('silent', 'empty', 'sparse')
 MODES = ('auto', 'remote')
@@ -67,7 +68,7 @@ def degrade(kind: str, start: float, rng: np.random.Generator):
 def build(kind: str, mode: str, version: str, seed: int) -> tuple[Rig, float]:
     """Return the rig of one run and the failure time."""
     profile = robot()
-    rng = np.random.default_rng([seed, 2])
+    rng = default_rng([seed, 2])
     start = FAIL_SEC + float(rng.uniform(0.0, 0.1))
     scenario = None
     if kind == 'silent':  # the scenario clock starts at the first physics step (one tick)

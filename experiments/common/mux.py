@@ -98,7 +98,7 @@ class MuxV01(MuxV02):
         r = np.asarray(scan.safety, dtype=float)
         hit = r < layout.range_max - 1e-3  # NaN compares False: free
         xs, ys = r[hit] * np.cos(theta[hit]), r[hit] * np.sin(theta[hit])
-        self.points = list(zip(xs, ys, strict=True))
+        self.points = list(zip(xs, ys))  # same mask: same length
         self.received = now
 
     def scale(self, vx: float, vy: float) -> float:
