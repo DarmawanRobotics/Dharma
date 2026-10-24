@@ -4,6 +4,7 @@
 #   make diagrams   export diagrams/*.drawio to diagrams/pdf (cropped) and diagrams/svg
 #   make manual     build/manual/dharma_manual.pdf
 #   make paper      build/paper/dharma.pdf
+#   make reference  regenerate manual/generated (SRC: dir with the dharma_* checkouts)
 #   make clean      remove build/ (the exported diagrams are kept: they are committed)
 #
 # The exported PDFs are committed, so LaTeX builds without draw.io. Without draw.io on PATH the
@@ -21,10 +22,10 @@ SVGS := $(addprefix diagrams/svg/,$(addsuffix .svg,$(NAMES)))
 HAVE_DRAWIO := $(shell command -v $(DRAWIO) 2>/dev/null)
 
 COMMON := authors.tex macros.tex
-MANUAL_TEX := manual/dharma_manual.tex $(wildcard manual/chapters/*.tex)
+MANUAL_TEX := manual/dharma_manual.tex $(wildcard manual/chapters/*.tex manual/generated/*.tex)
 PAPER_TEX := paper/dharma.tex $(wildcard paper/sections/*.tex) paper/references.bib
 
-.PHONY: all diagrams manual paper clean
+.PHONY: all diagrams manual paper reference clean
 
 all: diagrams manual paper
 
@@ -54,6 +55,10 @@ build/manual/dharma_manual.pdf: $(MANUAL_TEX) $(COMMON) $(PDFS)
 
 build/paper/dharma.pdf: $(PAPER_TEX) $(COMMON) $(PDFS)
 	cd paper && $(LATEXMK) $(LATEXFLAGS) -outdir=../build/paper dharma.tex
+
+SRC ?= ../..
+reference:
+	python3 manual/tools/reference.py --src $(SRC)
 
 clean:
 	rm -rf build
