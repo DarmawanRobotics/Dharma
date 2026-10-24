@@ -154,8 +154,8 @@ def planar_scan(points: np.ndarray, mount, base_height: float) -> np.ndarray:
     return base[keep, :2]
 
 
-def run(seed: int) -> list[LocRow]:
-    """Run one seed; return a row per estimator."""
+def run(seed: int, laps: int = LAPS) -> list[LocRow]:
+    """Run one seed; return a row per estimator (seed 1 also writes its error series)."""
     world, profile = mall_world(), robot()
     drift = load_scenario(str(sim_file('config/scenarios/drift.yaml')))
     scenario = replace(drift, seed=seed)
@@ -168,6 +168,7 @@ def run(seed: int) -> list[LocRow]:
     est = Estimators(world, camera.base_cam())
     lidar = LidarModel(rig.sim.config.lidar, profile.base_height, np.random.default_rng([seed, 4]))
     errors = {m: [] for m in METHODS}
+    series = []
     tick = [0]
 
     def drive(r: Rig, now: float):
@@ -187,12 +188,16 @@ def run(seed: int) -> list[LocRow]:
             for method, pose in est.poses().items():
                 errors[method].append((math.hypot(pose.x - truth.x, pose.y - truth.y),
                                        angle_diff(pose.yaw, truth.yaw)))  # fmt: skip
+            series.append((now, r.sim.odometry.distance, *(errors[m][-1][0] for m in METHODS)))
         tick[0] += 1
         return command
 
     rig.driver = drive
-    rig.run(600.0, lambda r: driver.follower.lap >= LAPS)
+    rig.run(600.0, lambda r: driver.follower.lap >= laps)
     distance = float(np.sum(np.hypot(*np.diff(rig.trace.arrays()['pose'][:, :2], axis=0).T)))
+    if seed == 1 and laps == LAPS:
+        header = ('t_sec', 'odom_distance_m', *(f'{m}_error_m' for m in METHODS))
+        write_rows('e3_errors_seed1', [dict(zip(header, v, strict=True)) for v in series])
     rows = []
     for method in METHODS:
         e = np.asarray(errors[method])
