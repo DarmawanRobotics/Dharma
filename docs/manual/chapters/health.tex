@@ -1,0 +1,157 @@
+\chapter{Health and diagnostics}
+\label{ch:health}
+
+\pkg{dharma_health} watches the stack and the computer and turns problems into a typed
+\topic{health/status} (\code{HealthStatus}: level OK / WARN / ERROR, issues, speed scale) and a
+\topic{diagnostics} array (one status per check). It is being refactored in parallel with this
+edition; this chapter follows its design (task file) and is checked against the finished code in
+phase 2. \todo{verify every check, parameter and default against dharma\_health 0.2.0 and add the
+generated parameter table}
+
+\section{Checks}
+
+\begin{description}
+  \item[Sensors.] For every configured topic the rate over a window and the \emph{header stamp
+    age}. The rate is $\hat f = (N - 1)/(t_N - t_1)$ over the window; a topic is silent when
+    $t - t_N > \max(1, 3\bar T)$ and slow when $\hat f < 0.8 f_{\min}$. The stamp age matters as
+    much as the rate: a 10~Hz topic with stamps 2~s in the past passed the 0.1 checks. A negative
+    age (a stamp from the future) is reported as a clock offset.
+  \item[TF.] Per-edge ages from \code{TfCache.edge_ages}, classified as a constant offset (clock)
+    or an age that grows with load, e.g.\ ``\code{camera_init->body} 1.8~s old (LiDAR clock?)''
+    instead of ``\code{map->base_link} stale''. An optional chrony offset check (command output
+    parsing, off by default).
+  \item[State.] The typed statuses of odometry (\code{LOST} and \code{DEGRADED}), localization
+    (\code{NONE} is a warning, review \#9) and control (e-stop, field), and the safety scan (stale
+    or all blocked).
+  \item[Nodes.] Missing nodes by fully qualified name with namespaces (review \#13).
+  \item[System.] CPU, memory, disk, load, Jetson GPU and thermal zones from a whitelist of CPU, GPU
+    and junction zones (some Jetson zones report bogus values); an unreadable value is a warning,
+    never OK (review \#17).
+\end{description}
+
+\textbf{Actionable output} (finding H1). The 0.1 monitor published JSON in a \code{std_msgs/String}
+that nothing acted on. The report now aggregates the issues into a level and a requested speed
+scale, for example 0.5 when the LiDAR rate is low or TF is late and 0 on an error; the control
+mux multiplies its commands by it when \param{use_health_limit} is set.
+
+\section{TF latency budget}
+\label{sec:tf-budget}
+
+The follower looks up \frm{map}$\to$\frm{base_link} at the latest available time. tf2 returns the
+transform at the \emph{latest common time} of the chain, the newest stamp available on every
+edge, and the pose is stale when its age exceeds \param{safety.tf_timeout_sec} (0.5~s). With $E$
+the dynamic edges, $\tau_e$ their stamps and $\Delta_e$ the clock offsets of their sources,
+\begin{align}
+  \mathrm{age}(t) &= t_{\mathrm{now}}^{\mathrm{consumer}} - \min_{e\in E}\tau_e,
+    \qquad \tau_e = t_e^{\mathrm{measured}} + \Delta_e, \\
+  \mathrm{age} &\approx \max_{e\in E}\Big(\underbrace{L_e^{\mathrm{acq}} + L_e^{\mathrm{proc}} +
+    L_e^{\mathrm{tx}} + L_e^{\mathrm{queue}}}_{\text{latency}} - \Delta_e\Big) +
+    \underbrace{\Delta_{\mathrm{consumer}}}_{\text{clock offset}} +
+    \underbrace{(t_{\mathrm{now}} - t_{\mathrm{received}})}_{\text{publish period}}.
+\end{align}
+In Dharma two edges are dynamic: \frm{map}$\to$\frm{odom}, stamped with \code{now()} by
+localization at 20~Hz (almost always fresh), and \frm{camera_init}$\to$\frm{body}, stamped by the
+estimator with the end time of the LiDAR scan from the LiDAR's own clock. The LIO edge therefore
+dominates:
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+  \toprule
+  Contribution & Typical \\
+  \midrule
+  acquisition (one Mid-360 frame) & $\approx 100$~ms \\
+  LIO processing & 20--80~ms \\
+  DDS transport and queueing & a few ms, more under load \\
+  until the next control tick & up to one period \\
+  \midrule
+  normal age & 0.15--0.35~s (limit 0.5~s) \\
+  unsynchronized LiDAR clock & $+\Delta$, added directly \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Causes, most likely first}
+
+\begin{longtable}{@{}p{0.27\textwidth}p{0.34\textwidth}p{0.33\textwidth}@{}}
+  \toprule
+  Cause & Typical symptom & How to confirm \\
+  \midrule
+  \endhead
+  T1. LiDAR clock not synchronized with the host (no PTP, gPTP or GPS) & constant age independent
+    of load; or extrapolation into the past or future errors; never in simulation (the simulator
+    stamps with \code{now()} unless latency is modelled) & compare \code{header.stamp} of
+    \topic{/livox/lidar} or \topic{/Odometry} with \texttt{date +\%s.\%N}; a difference $\gg 0.2$~s or
+    the year 1970 means T1 \\
+  T2. Clocks of two computers differ (Jetson and PC, NUC, laptop) & only nodes on the other machine
+    see stale poses & \texttt{chronyc tracking} on both; \texttt{ros2 run tf2\_ros tf2\_monitor map
+    base\_link} on each \\
+  T3. LIO latency grows (full CPU, thermal throttling) & age varies with load, often while mapping
+    or with many Python nodes & \code{tf2_monitor} (average and maximum delay per edge),
+    \texttt{ros2 topic delay /Odometry}, \code{tegrastats}, \topic{health/status} (temperature,
+    CPU) \\
+  T4. \topic{/tf} queue in Python listeners & age grows gradually, then catches up; worst when
+    \topic{/tf} carries leg joints at hundreds of Hz (every Python node deserializes all of them
+    under the GIL) & \texttt{ros2 topic hz /tf}, \texttt{ros2 topic bw /tf} \\
+  T5. An edge stops temporarily & at start (the gate holds the estimator), on estimator respawn,
+    or (0.1) while \code{record_tags} blocked \frm{map}$\to$\frm{odom} for 2~s (L2) &
+    \topic{odometry/status} \code{INITIALIZING} / \code{LOST}; localization log \\
+  T6. Mixed \code{use_sim_time} & only in simulation or rosbag replay: some nodes on
+    \topic{/clock}, some on wall time & \texttt{ros2 param get <node> use\_sim\_time} for every node \\
+  \bottomrule
+\end{longtable}
+
+\subsection{Diagnosis in ten minutes}
+\label{sec:ten-minutes}
+
+\begin{enumerate}
+  \item \textbf{Measure the sensor clock offset.} Print \code{header.stamp} of one
+    \topic{/livox/lidar} message and compare it with the host clock at reception. A robust
+    estimate is the median of $\hat\Delta = t_{\mathrm{received}} - \tau$ over 10~s; normally
+    $\hat\Delta \approx 0.10$--$0.15$~s (acquisition and transport). Repeat for
+    \topic{/livox/imu}, \topic{/Odometry} and the camera info.
+  \item \textbf{Find the old edge.} \texttt{ros2 run tf2\_ros tf2\_monitor map base\_link} shows the
+    average and maximum delay per edge. A large and stable delay of
+    \frm{camera_init}$\to$\frm{body} points to T1; a fluctuating one to T3 or T4.
+  \item \textbf{Check between machines.} \texttt{chronyc tracking}: the offset must be below 1~ms on
+    a LAN.
+  \item \textbf{Check the load.} \code{tegrastats}, \texttt{ros2 topic hz /tf},
+    \texttt{ros2 topic bw /tf}.
+  \item \textbf{Repeat standing still and driving.} A constant offset means a clock problem, an
+    offset that grows while moving means load.
+\end{enumerate}
+
+\subsection{Fixes}
+
+\textbf{In the system (T1, T2).}
+\begin{itemize}
+  \item PTP for the Mid-360: run \code{ptp4l} as master on the Jetson NIC connected to the LiDAR,
+    with hardware timestamping when \texttt{ethtool -T} supports it, and \code{phc2sys} when the NIC
+    clock must follow the system clock. The LiDAR stamps then share the host time base and
+    FAST-LIO, perception and localization are consistent.
+  \item Without PTP: restamp in the driver, $\tau' = t_{\mathrm{received}} - \hat L$ with the nominal
+    latency $\hat L$ (scan duration plus transport), keeping the per-point time offsets for
+    deskewing. Better than a free-running device clock, but its jitter enters the stamps.
+    FAST-LIO's \code{time_sync_en} only aligns the LiDAR with the IMU, not with the host.
+  \item Several computers: chrony with the Jetson as local server (or both on the same NTP server),
+    \code{makestep} at boot, and the chrony check in health.
+  \item Camera: make the driver use the host clock (RealSense: global time enabled), so the tag age
+    limit and the odometry lookup at the tag stamp do not fail.
+\end{itemize}
+
+\textbf{In the stack (T3--T5)}, all in 0.2.0:
+\begin{itemize}
+  \item per-edge ages in \code{TfCache} and in health, so the message names the edge and the likely
+    cause;
+  \item stamp-age checks in health, not only rates;
+  \item latency compensation in the follower: for ages between \param{safety.tf_compensate_sec}
+    and the timeout the pose is predicted to the current time with the odometry twist,
+    $\T{odom}{base}(t_{\mathrm{now}}) \approx \T{odom}{base}(\tau)\exp\big(\hat{\vect{\xi}}\,
+    (t_{\mathrm{now}} - \tau)\big)$, and the robot stops only above the timeout;
+  \item distinct states \code{TF_STARTING} (the gate holds), \code{TF_STALE} (age) and
+    \code{TF_CLOCK} (a pose from the future), so an operator knows what to fix;
+  \item no blocking service callbacks (L2), so \frm{map}$\to$\frm{odom} never pauses;
+  \item a simulator that stamps with a latency, so regressions of T1 and T3 show in CI
+    (Chapter~\ref{ch:sim}).
+\end{itemize}
+Reducing the \topic{/tf} load (joint states at most 30~Hz or on a separate topic; heavy Python
+nodes reading \topic{localization/pose} instead of the whole \topic{/tf}) and real-time priority
+with core isolation for the estimator help further.

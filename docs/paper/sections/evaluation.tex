@@ -1,0 +1,66 @@
+\section{Evaluation}
+\label{sec:eval}
+
+\textbf{Simulation protocol.} The simulator moves an omnidirectional or differential body with
+the acceleration limits of the profile, integrates the measured time step and detects
+collisions. Its LiDAR model follows the Mid-360 (vertical field of view from $-7^\circ$ to
+$52^\circ$ at the mount height, minimum and maximum range, noise, dropout windows). Odometry
+drifts as $\T{odom}{base} \leftarrow \T{odom}{base} \exp(\vect{\xi})$ with $\vect{\xi} \sim
+\mathcal{N}(\vect{0}, \boldsymbol{\Sigma}\,\Delta s)$, plus a yaw bias, a scale error and slip;
+LiDAR and odometry stamps lag by a latency $L$ and commands pass through a delay queue. Every
+scenario (world, timed obstacles, dropouts, latencies) is a YAML file with a seed, so each run
+is reproducible in CI. \todo{scenario list, number of seeds and runs per condition}
+
+\textbf{E1: stopping distance.} An obstacle appears in front of the robot at speeds from 0.2 to
+0.8~m/s; we record the distance from the moment the field sees it to standstill and the
+smallest clearance, against $D(v)$ of \eqref{eq:braking} (Table~\ref{tab:stop}).
+
+\begin{table}[t]
+  \centering
+  \caption{E1: model and measured stopping distance, smallest clearance (simulation)}
+  \label{tab:stop}
+  \begin{tabular}{@{}rrrr@{}}
+    \toprule
+    $v$ (m/s) & $D(v)$ (m) & measured (m) & clearance (m) \\
+    \midrule
+    0.2 & 0.08 & \tbd & \tbd \\
+    0.4 & 0.23 & \tbd & \tbd \\
+    0.6 & 0.45 & \tbd & \tbd \\
+    0.8 & 0.73 & \tbd & \tbd \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{E2: blind LiDAR.} The LiDAR drops out (no points, then too few points) while the robot
+drives in AUTO and in REMOTE. We measure the time from the dropout to a zero command, the
+distance travelled meanwhile and the REMOTE creep speed, and compare with the v0.1 behaviour,
+which read an all-zero scan as free. \todo{results table E2}
+
+\textbf{E3: localization.} With seeded odometry drift and tags along a route, we compare the
+absolute trajectory error of hard replacement by every tag (v0.1), the gated EKF, and the EKF
+with scan matching, and report the rate of rejected outliers (Table~\ref{tab:loc}).
+
+\begin{table}[t]
+  \centering
+  \caption{E3: localization error under seeded drift (simulation): RMSE of position, largest
+    position error, RMSE of heading}
+  \label{tab:loc}
+  \begin{tabular}{@{}lrrr@{}}
+    \toprule
+    Method & ATE (m) & max (m) & yaw (°) \\
+    \midrule
+    Hard replace (v0.1) & \tbd & \tbd & \tbd \\
+    EKF, tags & \tbd & \tbd & \tbd \\
+    EKF, tags + scan match & \tbd & \tbd & \tbd \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{E4: path shift.} A route through a corridor with standing and walking people is driven
+with path shift, reactive avoidance and no avoidance. We report the smallest clearance to
+people, the completion time, the number of stops and the largest offset from the route.
+\todo{results table E4}
+
+The $D(v)$ column of Table~\ref{tab:stop} is computed from \eqref{eq:braking} with the default
+profile ($a = 0.6$~m/s$^2$, $\tr = 0.25$~s); all measured columns are filled from the
+simulation runs.

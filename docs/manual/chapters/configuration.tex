@@ -1,0 +1,106 @@
+\chapter{Configuration and robot profile}
+\label{ch:config}
+
+\section{The robot profile}
+
+Every node reads the same \param{robot.*} parameters into an immutable
+\code{dharma_utils.robot.RobotProfile}. The product passes them once, in its robot params file,
+to every node through the launch argument \code{robot_params}:
+
+\begin{lstlisting}
+/**:
+  ros__parameters:
+    robot:
+      name: quadruped_a
+      kinematics: omni          # omni: vx, vy, wz; diff: vx, wz
+      base_height: 0.35         # m, base_link above the floor when standing
+      footprint: {front: 0.40, rear: 0.40, half_width: 0.28}
+      limits:
+        max_vx: 0.8             # m/s
+        max_vy: 0.4             # m/s (0 for diff)
+        max_wz: 1.0             # rad/s
+        max_accel: 0.5          # m/s^2
+        max_decel: 0.6          # m/s^2, braking: measure it on the robot
+        max_yaw_accel: 1.5      # rad/s^2, yaw braking
+        reaction_time: 0.25     # s, command to braking (sensing + transport)
+      frames: {map: map, odom: odom, base: base_link}
+\end{lstlisting}
+
+\readonlynote
+
+\input{generated/params_robot}
+
+\subsection{Derived quantities}
+
+Nothing derived from the robot is configured separately:
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+  \toprule
+  Quantity & Derivation and users \\
+  \midrule
+  inscribed radius & $r_{\mathrm{in}} = \min(f, b, w)$: lethal radius of the planner (plus margin),
+    inner edge of the rotation ring \\
+  circumscribed radius & $r_{\mathrm{c}} = \sqrt{\max(f,b)^2 + w^2}$: oriented checks of the
+    planner, outer edge of the ring swept when turning, creep cap in REMOTE \\
+  self filter & footprint grown by a margin: perception, mapping \\
+  floor & \frm{base_link} minus \param{robot.base_height}: height bands of perception, mapping,
+    scan matching \\
+  lateral speed & $v_y = 0$ for \code{diff}: envelope, controllers, approach \\
+  braking model & $D(v) = v\,\tr + v^2/(2a)$ with \param{max_decel} and \param{reaction_time}:
+    speed profile, path shift, motion guard, protective field \\
+  jump limits & \param{max_vx}, \param{max_wz}: odometry monitor, mapping jump gate \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+For the default footprint $r_{\mathrm{in}} = 0.28$~m and $r_{\mathrm{c}} = 0.49$~m. The 0.1
+planner used a radius of 0.35~m for this footprint (finding N1): a path it accepted could bring
+a corner of the body about 14~cm into a wall when the robot turned or moved sideways in a
+narrow corridor.
+
+The profile validates cross-field consistency: \param{max_vy} must be 0 for \code{diff}
+kinematics and the three frames must differ.
+
+\subsection{Measuring the limits}
+
+\param{max_decel}, \param{max_yaw_accel} and \param{reaction_time} bound every speed limit in
+the stack. Measure them on the robot in the worst case (slippery floor, full payload, low
+battery): command a step from cruise speed to zero and record the time until deceleration
+starts (reaction, including sensing and transport latency) and the stopping distance; use the
+smallest deceleration and the largest reaction time observed, then add margin.
+\todo{measurement procedure with a script and a recorded example (phase 2)}
+
+\section{Typed parameters}
+
+Each node declares its configuration as frozen dataclasses with
+\code{dharma_utils.config.param} fields (default, \code{doc}, \code{unit}, \code{min}, \code{max}, \code{choices}, \code{live})
+and \code{nested(...)} sections (dotted names such as \code{speed.cruise}). \code{DharmaNode}:
+\begin{itemize}
+  \item declares every field as a ROS parameter with a descriptor (description, unit, range,
+    read-only for \code{live=False}): \texttt{ros2 param describe <node> <name>} shows it;
+  \item validates all values at start (ranges, choices, types and the cross-field
+    \code{validate()} of the dataclass) and refuses to start on a safety value that fails;
+  \item validates every \texttt{ros2 param set} the same way and rejects an invalid value with
+    the reason, keeping the old one;
+  \item reports parameters in the YAML files that no dataclass declares (typos).
+\end{itemize}
+
+Safety values (margins, timeouts, limits) are read-only at runtime. Defaults live in the
+dataclasses; the package's \code{config/<pkg>.yaml} contains only what differs and
+documentation. Each subsystem chapter lists its parameters, generated from the dataclasses by
+\code{docs/manual/tools/reference.py}.
+
+\section{Parameter files and launch}
+
+A product layers its files over the package defaults:
+\begin{enumerate}
+  \item the package defaults \code{config/<pkg>.yaml};
+  \item the robot profile (\code{robot_params}), shared by every node;
+  \item a stack or site file (\code{params_file}) with per-node overrides;
+  \item non-empty launch arguments (an empty argument never overrides a file; a file argument
+    that is set but missing fails the launch).
+\end{enumerate}
+
+Paths accept \code{~} and \code{$VAR}. Paths received through services (tags files, routes,
+sites) must resolve inside \code{sites_dir} (\code{dharma_utils.io.resolve_inside}); a request
+that escapes it is refused.
