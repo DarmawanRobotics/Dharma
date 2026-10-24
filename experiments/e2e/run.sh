@@ -16,7 +16,7 @@ for run in $(seq "$runs"); do
   sleep 20
   timeout 270 python3 "$here/drive_route.py" --run "$run" > "$logs/drive_$run.log" 2>&1
   echo "run $run: exit $? ($(tail -1 "$logs/drive_$run.log" | cut -c1-200))"
-  kill -INT "$launch"
+  kill -TERM "$launch"  # background jobs of a script ignore SIGINT
   wait "$launch"
 done
 echo "logs in $logs"
