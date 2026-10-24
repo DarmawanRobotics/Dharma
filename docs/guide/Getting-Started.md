@@ -35,7 +35,7 @@ source install/setup.bash
 ros2 launch robot_bringup sim.launch.py rviz:=true
 ```
 
-This starts [dharma_sim](Simulation) (a kinematic robot with a simulated Mid-360 and drifting
+This starts [dharma_sim](Simulation.md) (a kinematic robot with a simulated Mid-360 and drifting
 odometry in a small mall) and the whole stack with odometry `external`. The simulator publishes
 `/initialpose` while the robot is not localized, so localization starts by itself.
 
@@ -62,10 +62,10 @@ ros2 topic pub --once /sim/obstacles geometry_msgs/msg/PoseArray "{poses: [{posi
 ## 3. On a robot
 
 1. Make a product from the template and fill in the robot profile:
-   [New Product from Template](New-Product-from-Template), [Robot Profile](Robot-Profile).
-2. Measure the braking limits ([Robot Profile](Robot-Profile#measure-the-braking-limits)).
-3. Map the site, record its tags, teach routes: [Mapping and Sites](Mapping-and-Sites).
+   [New Product from Template](New-Product-from-Template.md), [Robot Profile](Robot-Profile.md).
+2. Measure the braking limits ([Robot Profile](Robot-Profile.md#measure-the-braking-limits)).
+3. Map the site, record its tags, teach routes: [Mapping and Sites](Mapping-and-Sites.md).
 4. `ros2 launch robot_bringup robot.launch.py site:=<site>`.
 
 Keep a hardware e-stop at hand: Dharma's safety layer is a software channel, see
-[Safety](Safety).
+[Safety](Safety.md).

@@ -5,6 +5,13 @@ versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
 
+### Changed
+
+- Documentation as plain Markdown in the repository: the GitHub wiki pages moved to `docs/guide/`
+  with relative links and the diagram SVGs, so they render on GitHub (also in a private
+  repository); the MkDocs site, its Pages workflow and `make -C docs site` are removed.
+- The technical manual and the paper are committed as PDFs in `docs/pdf/` (`make -C docs pdf`).
+
 ### Added
 
 - Foxy support next to Humble and Jazzy: dev container (`dev-foxy`, ports 5903 / 6082 on
@@ -17,12 +24,6 @@ versions follow [SemVer](https://semver.org).
 - Experiments: E5, backing up after the inspection at a stop point that faces a wall (360° scan,
   `inspection.reverse_distance_m` 1 m; no back-up, free, a person behind); E1 also with
   `field.human_speed` 0 (the braking model alone).
-- Documentation site (MkDocs Material, https://darmawanrobotics.github.io/Dharma/): the wiki
-  pages through `docs/site/prepare.py` (wiki links and diagrams rewritten, tested), a landing page
-  with cards, grouped navigation, light / dark palette in the diagrams' colours, edit links to
-  `docs/wiki/`, and a downloads page with the manual and the paper as PDFs; `make -C docs site`;
-  `.github/workflows/docs.yml` builds the PDFs and the site (`--strict`) and deploys it to GitHub
-  Pages from `main` (pull requests build only).
 
 ### Changed
 
@@ -39,9 +40,7 @@ versions follow [SemVer](https://semver.org).
   (`ScanInput.centres`) as `path_follower_node` builds it; E1, E3, E4, E5 rerun (E1 and E2
   reproduce their CSVs; E3 changed with the follower's laps); results, tables, figure, README
   findings and open items, and the paper's evaluation, abstract and conclusion updated.
-- Docs: Foxy | Humble | Jazzy in the README, wiki, manual, paper and CI diagram.
-- `init_project.py` also removes the documentation site (`docs/site`, the docs workflow) unless
-  `--keep-docs`; pre-commit's check-yaml skips `docs/site/mkdocs.yml` (Python tags).
+- Docs: Foxy | Humble | Jazzy in the README, guide, manual, paper and CI diagram.
 
 ### Fixed
 

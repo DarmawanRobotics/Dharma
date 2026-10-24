@@ -66,7 +66,7 @@ ros2 service call /route/stop std_srvs/srv/Trigger                   # route/sav
 ```
 
 Drive the route; mark stop points where the robot should wait. The Mission panel in RViz has the
-same buttons. Load it later with `navigation/load_path` ([Navigation](Navigation)).
+same buttons. Load it later with `navigation/load_path` ([Navigation](Navigation.md)).
 
 ## Switch sites
 

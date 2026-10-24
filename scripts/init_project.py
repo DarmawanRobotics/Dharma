@@ -7,7 +7,7 @@ Turn the Dharma template into a robot product repository (run once, after "Use t
 
 Renames the robot_bringup placeholder package everywhere, sets the robot namespace and the
 container names, removes what only the Dharma hub needs (tooling/, the tooling sync, this
-script, the manual, the paper, the diagram sources, the wiki and the documentation site unless
+script, the manual, the paper, the diagram sources, the PDFs and the guide unless
 --keep-docs), resets the version to 0.1.0 and rewrites README.md and CHANGELOG.md. Commit the
 result.
 """
@@ -34,12 +34,11 @@ DOCS_ONLY = (
     'docs/manual',
     'docs/paper',
     'docs/diagrams',
-    'docs/wiki',
+    'docs/guide',
+    'docs/pdf',
     'docs/Makefile',
     'docs/authors.tex',
     'docs/macros.tex',
-    'docs/site',
-    '.github/workflows/docs.yml',
 )
 VERSION = '0.1.0'
 

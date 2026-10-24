@@ -4,12 +4,12 @@
 Its safety layer is a software channel (protective field, watchdogs, latched e-stop): it is not
 certified. A robot in a public space also needs a safety-rated first channel (hardware e-stop,
 and a certified scanner or bumper where required, wired to the drive) and a product safety case.
-See [Safety](Safety).
+See [Safety](Safety.md).
 
 **Which robots does it support?**
 Any legged or wheeled base with velocity control (`omni`: vx, vy, wz; `diff`: vx, wz), a
 Livox Mid-360 (or any LiDAR as PointCloud2 with another LiDAR-inertial estimator) and an IMU.
-The robot is described by the [robot profile](Robot-Profile); the driver is a product package.
+The robot is described by the [robot profile](Robot-Profile.md); the driver is a product package.
 
 **Foxy, Humble or Jazzy?**
 All three. Every repository is built and tested on each in CI. Foxy (Ubuntu 20.04, Python 3.8)
@@ -27,7 +27,7 @@ On purpose. The operator source must re-arm with neutral commands, and the follo
 **Can I use another controller or avoidance algorithm?**
 Yes, without forking: six controllers and four avoidance policies are built in, and a product
 registers its own through the `dharma.controllers` or `dharma.avoidance` entry point groups. See
-[Navigation](Navigation) and the manual's development chapter.
+[Navigation](Navigation.md) and the manual's development chapter.
 
 **Can I use Nav2 instead?**
 Dharma does not use Nav2. Its follower publishes `control/nav_cmd_vel`; any planner or
@@ -39,7 +39,7 @@ long loops.
 
 **Where are the maps?**
 In sites under `sites_dir` (`~/dharma/map` by default; the bringup's `sites_dir` argument sets it
-for localization, mapping and navigation together). See [Mapping and Sites](Mapping-and-Sites).
+for localization, mapping and navigation together). See [Mapping and Sites](Mapping-and-Sites.md).
 
 **How do I check a parameter's unit and range?**
 `ros2 param describe /<node> <name>`, the Tuning panel, or the manual's parameter tables.
@@ -49,5 +49,5 @@ The evaluation in the paper is in simulation (core-level closed-loop runs and th
 dharma_sim). Real-robot trials are future work; measure the braking limits on your robot before
 it drives on its own.
 
-**How do I publish this wiki?**
-See `docs/wiki/README.md` in the hub.
+**Where are the manual and the paper?**
+As PDFs in [`docs/pdf/`](../pdf/); `make -C docs pdf` rebuilds them.

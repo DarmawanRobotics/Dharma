@@ -53,8 +53,8 @@ def test_rename_and_removed():
     assert init.removed('tooling/ruff.toml', o)
     assert init.removed('scripts/init_project.py', o)
     assert init.removed('docs/paper/dharma.tex', o)
-    assert init.removed('docs/site/mkdocs.yml', o)
-    assert init.removed('.github/workflows/docs.yml', o)
+    assert init.removed('docs/guide/Safety.md', o)
+    assert init.removed('docs/pdf/dharma_paper.pdf', o)
     assert not init.removed('.github/workflows/ci.yml', o)
     assert not init.removed('docs/README.md', o)
     assert not init.removed('docs/paper/dharma.tex', options(keep_docs=True))
@@ -113,8 +113,8 @@ def test_conversion(copy):
     assert not (copy / 'tooling').exists()
     assert not (copy / 'scripts' / 'init_project.py').exists()
     assert not (copy / 'docs' / 'paper').exists()
-    assert not (copy / 'docs' / 'site').exists()
-    assert not (copy / '.github' / 'workflows' / 'docs.yml').exists()
+    assert not (copy / 'docs' / 'guide').exists()
+    assert not (copy / 'docs' / 'pdf').exists()
     assert (copy / 'ruff.toml').is_file()  # the lint configuration stays
     assert 'robot_bringup' not in all_text(copy)
     assert "DEFAULT_ROBOT_NS = 'lite3'" in (package / 'mr_bringup' / 'bringup.py').read_text()
@@ -132,7 +132,7 @@ def test_conversion(copy):
 def test_keep_docs(copy):
     init.main(['--name', 'MyRobot', '--package', 'mr_bringup', '--keep-docs', '--root', str(copy)])
     assert (copy / 'docs' / 'paper' / 'x.tex').is_file()
-    assert (copy / 'docs' / 'site' / 'mkdocs.yml').is_file()
+    assert (copy / 'docs' / 'guide' / 'Safety.md').is_file()
     assert not (copy / 'tooling').exists()
 
 

@@ -19,13 +19,13 @@ git add -A && git commit -m "chore: init from the Dharma template"
 
 `init_project.py` renames the `robot_bringup` placeholder everywhere, sets the robot namespace and
 the container names, removes what only the hub needs (`tooling/`, the tooling sync, the script
-itself; the manual, paper, diagrams and wiki unless `--keep-docs`), resets the version to 0.1.0
+itself; the manual, paper, diagrams, PDFs and guide unless `--keep-docs`), resets the version to 0.1.0
 and rewrites `README.md` and `CHANGELOG.md`.
 
 ## 2. Describe the robot
 
 Edit `config/robot.yaml` of the bringup package: kinematics, footprint, base height, limits and
-frames ([Robot Profile](Robot-Profile)). The launch validates it and stops with the reason on an
+frames ([Robot Profile](Robot-Profile.md)). The launch validates it and stops with the reason on an
 unknown name or an out-of-range value.
 
 ## 3. Connect the driver
@@ -33,7 +33,7 @@ unknown name or an out-of-range value.
 The robot driver is a separate package. It provides `launch/bringup.launch.py` (or another file)
 accepting `namespace`; it publishes `/<ns>/odom`, `/<ns>/battery`, the LiDAR and IMU and the URDF
 TF, and subscribes `/<ns>/cmd_vel`. It must stop on its own command timeout. Wire the hardware
-e-stop to `control/hw_estop` ([Safety](Safety)).
+e-stop to `control/hw_estop` ([Safety](Safety.md)).
 
 ```bash
 ros2 launch my_robot_bringup robot.launch.py robot_driver:=my_driver           # or ROBOT_DRIVER=...
@@ -52,8 +52,8 @@ ros2 launch my_robot_bringup sim.launch.py rviz:=true
 
 ## 5. On the robot
 
-1. Measure the braking limits ([Robot Profile](Robot-Profile#measure-the-braking-limits)).
-2. Map the first site, record its tags, teach a route ([Mapping and Sites](Mapping-and-Sites)).
+1. Measure the braking limits ([Robot Profile](Robot-Profile.md#measure-the-braking-limits)).
+2. Map the first site, record its tags, teach a route ([Mapping and Sites](Mapping-and-Sites.md)).
 3. `ros2 launch my_robot_bringup robot.launch.py site:=<site>`; for boot,
    `scripts/setup.sh install service` installs a systemd unit running the bringup.
 4. Pin the Dharma release tags in `dharma.repos` once the robot works.

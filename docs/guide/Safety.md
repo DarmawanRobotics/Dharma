@@ -17,7 +17,7 @@ release the software e-stop explicitly. The robot driver must stop on its own co
 
 ## The pipeline
 
-![Safety pipeline](images/safety_pipeline.svg)
+![Safety pipeline](../diagrams/svg/safety_pipeline.svg)
 
 `control_mux_node` is the **only** publisher of the robot's `cmd_vel`:
 
@@ -33,7 +33,7 @@ release the software e-stop explicitly. The robot driver must stop on its own co
    during the release never moves the robot. The follower pauses itself while the e-stop is
    engaged (a sticky pause: `navigation/resume` after the release).
 4. **Envelope.** `robot.limits` speeds, `vy = 0` for diff robots, any non-finite axis makes the
-   command zero; optionally the [health](Health) speed scale.
+   command zero; optionally the [health](Health.md) speed scale.
 5. **Protective field** on the 360° `perception/safety_scan`, with one braking model
    `D(v) = v t_r + v² / 2a`:
 
@@ -62,7 +62,7 @@ A scan that says nothing is never read as free:
 Before the mux, the follower already stops for stale TF (`TF_STARTING`, `TF_STALE`,
 `TF_CLOCK`), stale or blind scans, stale avoidance and emergencies, with a zero command every
 tick; its motion guard limits every command along its direction with the 360° scan and the same
-braking model. See [Navigation](Navigation).
+braking model. See [Navigation](Navigation.md).
 
 ## Known gaps
 
@@ -72,6 +72,6 @@ braking model. See [Navigation](Navigation).
 - **Negative obstacles** (stairs down, platform edges) are not detected.
 - The scan is not deskewed (up to `v · 0.1 s` of distortion): the field margins must cover it.
 - The limits are only as good as the measured `max_decel` and `reaction_time`
-  ([Robot Profile](Robot-Profile#measure-the-braking-limits)).
+  ([Robot Profile](Robot-Profile.md#measure-the-braking-limits)).
 
 The manual's safety case lists every hazard, its mitigation and the test that verifies it.
