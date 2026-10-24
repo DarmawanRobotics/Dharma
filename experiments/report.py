@@ -44,31 +44,45 @@ def tabular(spec: str, header: str, rows: list[str]) -> str:
 
 
 def e1(macros: dict) -> str:
-    """Table E1 and its macros."""
+    """Table E1 and its macros (prefix EOne: default human speed, EOneZero: human speed 0)."""
     rows = read_rows('e1_stopping')
+    humans = sorted({r['human_speed'] for r in rows}, key=float, reverse=True)
     lines = []
-    for v in sorted({r['speed'] for r in rows}, key=float):
-        model = values(rows, 'model_m', speed=v)[0]
-        travel = values(rows, 'travel_m', speed=v)
-        clear = values(rows, 'min_clearance_m', speed=v)
-        lines.append(f'{float(v):.1f} & {model:.2f} & {pm(travel, 3)} & {stat(clear, "min", 3)}')
+    for h in humans:
+        for v in sorted({r['speed'] for r in rows if r['human_speed'] == h}, key=float):
+            w = {'speed': v, 'human_speed': h}
+            model = values(rows, 'model_m', **w)[0]
+            travel, clear = values(rows, 'travel_m', **w), values(rows, 'min_clearance_m', **w)
+            lines.append(f'{float(h):.1f} & {float(v):.1f} & {model:.2f} & {pm(travel, 3)} & '
+                         f'{stat(clear, "min", 3)}')  # fmt: skip
+    if len(humans) != 2:
+        raise ValueError(f'e1_stopping: expected 2 human speeds, found {len(humans)}')
+    for prefix, h in zip(('EOne', 'EOneZero'), humans):
+        e1_macros(macros, prefix, [r for r in rows if r['human_speed'] == h])
+    macros['EOneHumanSpeed'] = f'{float(humans[0]):.1f}'
     macros['EOneRuns'] = str(len(rows))
+    macros['EOneCollisions'] = str(sum(r['collided'] == 'True' for r in rows))
+    return tabular('@{}rrrrr@{}', '$v_h$ (m/s) & $v$ (m/s) & $D(v)$ (m) & measured (m) & '
+                   'clearance (m)', lines)  # fmt: skip
+
+
+def e1_macros(macros: dict, prefix: str, rows: list[dict]):
+    """Macros of the E1 runs of one human speed."""
     ordered = sorted({r['speed'] for r in rows}, key=float)
     if len(ordered) != len('ABCD'):
         raise ValueError(f'e1_stopping: expected 4 speeds, found {len(ordered)}')
     for letter, v in zip('ABCD', ordered):
-        macros[f'EOneMeasured{letter}'] = stat(values(rows, 'travel_m', speed=v), 'mean', 2)
-        macros[f'EOneModel{letter}'] = f'{values(rows, "model_m", speed=v)[0]:.2f}'
-    speeds = {r['speed'] for r in rows}
-    spread = [summary(values(rows, 'travel_m', speed=v))['std'] for v in speeds]
-    macros['EOneStdMax'] = f'{max(spread):.3f}'
-    macros['EOneClearMin'] = stat(values(rows, 'min_clearance_m'), 'min', 3)
-    macros['EOneReactMin'] = stat(values(rows, 'reaction_sec'), 'min', 2)
-    macros['EOneReactMax'] = stat(values(rows, 'reaction_sec'), 'max', 2)
-    macros['EOneCollisions'] = str(sum(r['collided'] == 'True' for r in rows))
+        macros[f'{prefix}Measured{letter}'] = stat(values(rows, 'travel_m', speed=v), 'mean', 2)
+        macros[f'{prefix}Model{letter}'] = f'{values(rows, "model_m", speed=v)[0]:.2f}'
+        macros[f'{prefix}Clear{letter}'] = stat(values(rows, 'min_clearance_m', speed=v), 'min', 2)
+    spread = [summary(values(rows, 'travel_m', speed=v))['std'] for v in ordered]
+    macros[f'{prefix}StdMax'] = f'{max(spread):.3f}'
+    macros[f'{prefix}ClearMin'] = stat(values(rows, 'min_clearance_m'), 'min', 3)
+    macros[f'{prefix}ReactMin'] = stat(values(rows, 'reaction_sec'), 'min', 2)
+    macros[f'{prefix}ReactMax'] = stat(values(rows, 'reaction_sec'), 'max', 2)
     ratio = [float(r['travel_m']) / float(r['model_m']) for r in rows]
-    macros['EOneRatioMax'] = f'{max(ratio):.2f}'
-    return tabular('@{}rrrr@{}', '$v$ (m/s) & $D(v)$ (m) & measured (m) & clearance (m)', lines)
+    macros[f'{prefix}RatioMax'] = f'{max(ratio):.2f}'
+    macros[f'{prefix}RatioMin'] = f'{min(ratio):.2f}'
 
 
 def e2(macros: dict) -> str:
@@ -151,6 +165,42 @@ def e4(macros: dict) -> str:
                    'clear. (m) & offset (m)', lines)  # fmt: skip
 
 
+def e5(macros: dict) -> str:
+    """Table E5 and its macros."""
+    rows = read_rows('e5_backup')
+    labels = {'none': 'no back-up', 'free': 'back-up, free', 'person': 'back-up, person'}
+    lines = []
+    for condition, label in labels.items():
+        w = {'condition': condition}
+        done = [r for r in rows if r['condition'] == condition]
+        ok = sum(r['completed'] == 'True' for r in done)
+        time = pm(values(rows, 'time_sec', **w), 1) if ok else '--'
+        cells = (
+            pm(values(rows, 'backed_m', **w), 2),
+            pm(values(rows, 'blocked_sec', **w), 1),
+            stat(values(rows, 'person_clearance_m', **w), 'min', 2),
+            stat(values(rows, 'wall_clearance_m', **w), 'min', 2),
+        )
+        lines.append(f'{label} & {ok}/{len(done)} & {time} & ' + ' & '.join(cells))
+        key = condition.capitalize()
+        macros[f'EFive{key}Done'] = str(ok)
+        macros[f'EFive{key}Time'] = stat(values(rows, 'time_sec', **w), 'mean', 1)
+        macros[f'EFive{key}Backed'] = stat(values(rows, 'backed_m', **w), 'mean', 2)
+        macros[f'EFive{key}Blocked'] = stat(values(rows, 'blocked_sec', **w), 'mean', 1)
+    person = {'condition': 'person'}
+    macros['EFivePersonBackedMin'] = stat(values(rows, 'backed_m', **person), 'min', 2)
+    macros['EFivePersonBackedMax'] = stat(values(rows, 'backed_m', **person), 'max', 2)
+    macros['EFivePersonClearMin'] = stat(values(rows, 'person_clearance_m', **person), 'min', 2)
+    stuck = [r for r in rows if r['condition'] == 'person' and float(r['blocked_sec']) > 0.0]
+    macros['EFivePersonHeld'] = str(len(stuck))
+    macros['EFiveWallClearMin'] = stat(values(rows, 'wall_clearance_m'), 'min', 2)
+    macros['EFiveCollisions'] = str(sum(r['collided'] == 'True' for r in rows))
+    macros['EFiveRuns'] = str(len(rows))
+    macros['EFiveSeeds'] = str(len(values(rows, 'seed', condition='none')))
+    return tabular('@{}lrrrrrr@{}', 'condition & done & time (s) & backed (m) & '
+                   'blocked (s) & person (m) & wall (m)', lines)  # fmt: skip
+
+
 def clearance(xs) -> str:
     """Return the smallest clearance (m), 'contact' when a person touched the body."""
     smallest = min(xs)
@@ -167,7 +217,7 @@ def write(name: str, text: str):
 def main():
     """Write every table, the macros and (with matplotlib) the figures."""
     macros: dict[str, str] = {}
-    for name, make in (('e1', e1), ('e2', e2), ('e3', e3), ('e4', e4)):
+    for name, make in (('e1', e1), ('e2', e2), ('e3', e3), ('e4', e4), ('e5', e5)):
         write(f'{name}.tex', make(macros))
     write('results.tex', ''.join(f'\\newcommand{{\\{k}}}{{{v}}}\n' for k, v in macros.items()))
     try:
