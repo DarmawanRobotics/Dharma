@@ -14,7 +14,9 @@ and the manual's development chapter. In short:
 - Nothing robot-specific in code: geometry, limits and frames come from the `robot.*` profile.
 - Parameters are dataclasses with `param(default, doc=, unit=, min=, max=)`; safety values
   `live=False`; units in names (`_sec`, `_m`, `_deg`), radians inside.
-- ROS 2 Humble and Jazzy, Python 3.10+ (no 3.11+ features), numpy >= 1.21.
+- ROS 2 Foxy, Humble and Jazzy, Python 3.8+ (`from __future__ import annotations` first in every
+  module, no 3.9+ runtime features), numpy >= 1.17; distro differences only through
+  `dharma_utils.ros` (`compat`, `launch`), never a branch on the distro in a package.
 - English, one-line docstrings, type hints, frozen dataclasses, `Enum` states.
 
 ## Lint, build, test
@@ -31,13 +33,13 @@ PYTHONPATH=$PWD python -m pytest -q test/unit    # fast, from a package director
 - Every fixed defect gets a regression test.
 - `ament_python` packages declare `extras_require={'test': ['pytest']}`, otherwise colcon runs no
   tests: check that `colcon test-result` reports your tests, not 0.
-- Never name a module-level test helper `setup` or `teardown`: the Humble and Jazzy pytest run
-  them as nose-style fixtures.
+- Never name a module-level test helper `setup` or `teardown`: the Foxy, Humble and Jazzy pytest
+  run them as nose-style fixtures. Foxy's CI runs pytest 4.6.
 
 ## Commits and pull requests
 
 - Conventional Commits, one short line: `fix(mux): rotation inside the field`.
-- One topic per pull request into `main`; CI must be green on Humble and Jazzy.
+- One topic per pull request into `main`; CI must be green on Foxy, Humble and Jazzy.
 - A change across several repositories uses the **same branch name** in each: CI builds the
   dependencies from that branch when it exists.
 - Safety-relevant changes (speeds, limits, e-stop, avoidance, the mux, the robot profile) need a

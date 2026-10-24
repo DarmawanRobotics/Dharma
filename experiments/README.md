@@ -16,7 +16,7 @@ end-to-end check drives the real nodes of `robot_bringup sim.launch.py`.
 
 The cores are imported from the package checkouts: `common/stack.py` puts them on `sys.path`,
 searching `$DHARMA_SRC`, `src/dharma/` (`vcs import src < dharma.repos`) and the directory
-next to the hub. Python 3.10+, numpy, scipy, PyYAML; matplotlib for the figures, pytest for the
+next to the hub. Python 3.8+, numpy, scipy, PyYAML; matplotlib for the figures, pytest for the
 tests. No ROS is needed for E1-E4.
 
 ```bash

@@ -1,7 +1,7 @@
 # Dharma
 
-Dharma is a robot-agnostic ROS 2 autonomy stack (Humble and Jazzy) for legged and wheeled
-service robots in public spaces: LiDAR-inertial odometry, fiducial localization, occupancy
+Dharma is a robot-agnostic ROS 2 autonomy stack (Foxy, Humble and Jazzy) for legged and
+wheeled service robots in public spaces: LiDAR-inertial odometry, fiducial localization, occupancy
 mapping with sites, path planning and following, a safety mux with a protective field, health
 monitoring, RViz panels and a simulator. Nothing in it is specific to one robot: geometry,
 limits and frames come from one [robot profile](Robot-Profile). A product (a tour guide, an
