@@ -1,0 +1,12 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+Dharma shows that a small autonomy stack can be both robot-agnostic and explicit about its
+assumptions: one robot profile feeds every geometric and dynamic limit, the localization
+estimate carries its uncertainty and gates its corrections, and a single braking model bounds
+every speed from the route profile to the protective field, which treats missing data as an
+obstacle. Pure algorithm cores and enforced conventions keep these models consistent across
+eleven repositories and two ROS~2 distributions. \todo{summary of the measured results}
+Future work is a pose graph for mapping and localization, deskewed and ground-segmented
+perception for the near field, and a second robot model that runs the stack with only a new
+robot adapter.
