@@ -1,1 +1,63 @@
-\chapter{simulation}
+\chapter{Simulation}
+\label{ch:sim}
+
+\pkg{dharma_sim} replaces the robot and the LiDAR-inertial estimator so the whole stack runs
+without hardware, in CI and on a laptop. It is being refactored in parallel with this edition;
+this chapter follows its design (task file) and is checked against the finished code in phase 2.
+\todo{verify against dharma\_sim 0.2.0: nodes, parameters, scenario format, generated parameter
+table}
+
+\section{Why the simulator models errors}
+
+The 0.1 simulator had perfect odometry and stamped everything with \code{now()} (finding S1). The
+code paths that handle drift (localization corrections, L1), map smearing (M1), a tilted start
+(O1) and stale TF (T1, T3) were therefore never exercised. Version 0.2.0 models them, with a seed
+so every run is reproducible.
+
+\section{Models}
+
+\begin{description}
+  \item[Body.] Omnidirectional or differential from \param{robot.kinematics}, with the acceleration
+    limits of the profile. It integrates the measured time step (clamped; 0.1 used a fixed step per
+    wall-timer tick, so the simulated robot slowed down under load, review \#14), stops on stale
+    commands and detects collisions: \topic{sim/collision} (Bool, latched true on contact) and the
+    body stops.
+  \item[World.] Walls, pillars (circles) and timed dynamic obstacles; ray casting that is correct
+    for origins inside circles (0.1 used $t = -b - \sqrt{\mathrm{disc}}$ there and was blind,
+    review \#10).
+  \item[LiDAR.] A Mid-360 model: vertical field of view from $-7^\circ$ to $52^\circ$ at the mount
+    height, minimum and maximum range, noise, dropout windows; a dense enough cloud (perception
+    needs at least \param{blind.min_points} points per scan).
+  \item[Odometry drift.] $\T{odom}{base} \leftarrow \T{odom}{base}\exp(\vect{\xi})$,
+    $\vect{\xi} \sim \mathcal{N}(\vect{0}, \boldsymbol{\Sigma}\,\Delta s)$ per distance travelled,
+    plus a yaw bias, a scale error and slip; seeded RNG.
+  \item[Latency.] Stamps $\tau = t - L$ for LiDAR and odometry, and a command latency queue.
+  \item[IMU mounting.] The Livox manual gives the IMU at $(0.011, 0.02329, -0.04412)$~m in
+    \frm{livox_frame}; 0.1 used FAST-LIO's $T_{IL}$ with the opposite sign (review \#11).
+\end{description}
+
+\section{Robot-side contract}
+
+The simulator publishes what a robot and its estimator publish: \topic{/<ns>/odom},
+\topic{/<ns>/battery}, \topic{/Odometry}, \topic{/cloud_registered_body}, TF
+\frm{camera_init}$\to$\frm{body} and \frm{base_link}$\to$\frm{livox_frame}$\to$\frm{livox_imu_frame},
+and subscribes \topic{/<ns>/cmd_vel}. It also publishes \topic{sim/ground_truth},
+\topic{sim/obstacles} and \topic{sim/inspect}, and answers \topic{/initialpose} while
+\topic{localization/status} is \code{NONE}. Odometry runs with \code{method:=external}. Perception
+publishes \code{BLOCKED} scans unless it gets \frm{odom}$\to$\frm{base_link} through the bridge
+chain; the mux forwards nothing without a fresh, stamped, 360° safety scan in \frm{base_link}.
+
+\section{Scenarios and site fixture}
+
+Scenarios are YAML files with a seed, timed obstacles, dropouts and latencies, loaded by the node
+and by tests (\code{config/scenarios/*.yaml}; worlds in \code{config/worlds/}, routes in
+\code{config/routes/}). A site fixture writes a loadable site (map, tags and a route) from a
+world, without points of interest or tours.
+
+\section{Evaluation protocol}
+\label{sec:eval-protocol}
+
+The experiments of the paper run on these scenarios: E1 stopping distance against $D(v)$, E2
+blind LiDAR in AUTO and REMOTE, E3 localization error with and without the EKF and scan matching
+under seeded drift, E4 path shift clearance and completion time with standing and walking people.
+\todo{scenario files, seeds, runs per condition, metrics scripts and results (phase 2)}

@@ -163,14 +163,14 @@ site, so it refuses unless the state is \code{LOCALIZED} and never records the t
 \param{tag.record_min_samples} samples or a larger spread than the limits are refused. It runs
 as a session over the node's timers in its own callback group (no sleep in a callback, finding
 L2), so \frm{map}$\to$\frm{odom} keeps flowing at \param{publish_hz} while it records. Reads are
-tolerant: a corrupt tags file is reported (\code{success: false}) and left untouched (review
+tolerant: a corrupt tags file is reported (\texttt{success: false}) and left untouched (review
 \#3); every write keeps a \code{.bak}. \code{load_tags} accepts only paths that resolve inside
 \param{sites_dir} (review \#12); \code{~} is expanded (review \#11).
 
 \section{Interfaces}
 
 \begin{center}
-\begin{tabularx}{\textwidth}{@{}p{0.33\textwidth}p{0.22\textwidth}X@{}}
+\begin{tabularx}{\textwidth}{@{}p{0.31\textwidth}p{0.27\textwidth}X@{}}
   \toprule
   Interface & Type & \\
   \midrule

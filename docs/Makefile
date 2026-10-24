@@ -51,7 +51,7 @@ manual: build/manual/dharma_manual.pdf
 paper: build/paper/dharma.pdf
 
 build/manual/dharma_manual.pdf: $(MANUAL_TEX) $(COMMON) $(PDFS)
-	cd manual && $(LATEXMK) $(LATEXFLAGS) -outdir=../build/manual dharma_manual.tex
+	cd manual && BIBINPUTS=../paper: $(LATEXMK) $(LATEXFLAGS) -outdir=../build/manual dharma_manual.tex
 
 build/paper/dharma.pdf: $(PAPER_TEX) $(COMMON) $(PDFS)
 	cd paper && $(LATEXMK) $(LATEXFLAGS) -outdir=../build/paper dharma.tex

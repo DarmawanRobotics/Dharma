@@ -19,14 +19,14 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{MODE_AUTO = 0} & \code{uint8} &  \\
-\code{MODE_REMOTE = 1} & \code{uint8} &  \\
-\code{FIELD_OFF = 0} & \code{uint8} & not applied in this mode \\
-\code{FIELD_CLEAR = 1} & \code{uint8} &  \\
-\code{FIELD_LIMITED = 2} & \code{uint8} & slowed down for an obstacle \\
-\code{FIELD_STOP = 3} & \code{uint8} & obstacle within the stopping distance \\
-\code{FIELD_STALE = 4} & \code{uint8} & no fresh safety scan \\
-\code{FIELD_BLIND = 5} & \code{uint8} & the scan reports blocked or unknown sectors \\
+\code{MODE_AUTO} = 0 & \code{uint8} &  \\
+\code{MODE_REMOTE} = 1 & \code{uint8} &  \\
+\code{FIELD_OFF} = 0 & \code{uint8} & not applied in this mode \\
+\code{FIELD_CLEAR} = 1 & \code{uint8} &  \\
+\code{FIELD_LIMITED} = 2 & \code{uint8} & slowed down for an obstacle \\
+\code{FIELD_STOP} = 3 & \code{uint8} & obstacle within the stopping distance \\
+\code{FIELD_STALE} = 4 & \code{uint8} & no fresh safety scan \\
+\code{FIELD_BLIND} = 5 & \code{uint8} & the scan reports blocked or unknown sectors \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{mode} & \code{uint8} &  \\
@@ -45,9 +45,9 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{OK = 0} & \code{uint8} &  \\
-\code{WARN = 1} & \code{uint8} &  \\
-\code{ERROR = 2} & \code{uint8} &  \\
+\code{OK} = 0 & \code{uint8} &  \\
+\code{WARN} = 1 & \code{uint8} &  \\
+\code{ERROR} = 2 & \code{uint8} &  \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{level} & \code{uint8} &  \\
@@ -61,9 +61,9 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{NONE = 0} & \code{uint8} & no map -> odom yet \\
-\code{LOCALIZED = 1} & \code{uint8} &  \\
-\code{UNCERTAIN = 2} & \code{uint8} & localized, but the uncertainty grew past the limits \\
+\code{NONE} = 0 & \code{uint8} & no map -> odom yet \\
+\code{LOCALIZED} = 1 & \code{uint8} &  \\
+\code{UNCERTAIN} = 2 & \code{uint8} & localized, but the uncertainty grew past the limits \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{state} & \code{uint8} &  \\
@@ -98,16 +98,16 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{INACTIVE = 0} & \code{uint8} &  \\
-\code{JOINING = 1} & \code{uint8} & walking to the path \\
-\code{FOLLOWING = 2} & \code{uint8} &  \\
-\code{APPROACHING = 3} & \code{uint8} & final x, y, yaw approach to a stop point or the goal \\
-\code{DWELLING = 4} & \code{uint8} & waiting at a stop point \\
-\code{PAUSED = 5} & \code{uint8} & see pause\_reasons \\
-\code{BLOCKED = 6} & \code{uint8} &  \\
-\code{OFF_PATH = 7} & \code{uint8} &  \\
-\code{GOAL_REACHED = 8} & \code{uint8} &  \\
-\code{FAILED = 9} & \code{uint8} &  \\
+\code{INACTIVE} = 0 & \code{uint8} &  \\
+\code{JOINING} = 1 & \code{uint8} & walking to the path \\
+\code{FOLLOWING} = 2 & \code{uint8} &  \\
+\code{APPROACHING} = 3 & \code{uint8} & final x, y, yaw approach to a stop point or the goal \\
+\code{DWELLING} = 4 & \code{uint8} & waiting at a stop point \\
+\code{PAUSED} = 5 & \code{uint8} & see pause\_reasons \\
+\code{BLOCKED} = 6 & \code{uint8} &  \\
+\code{OFF_PATH} = 7 & \code{uint8} &  \\
+\code{GOAL_REACHED} = 8 & \code{uint8} &  \\
+\code{FAILED} = 9 & \code{uint8} &  \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{state} & \code{uint8} &  \\
@@ -125,10 +125,10 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{INITIALIZING = 0} & \code{uint8} &  \\
-\code{OK = 1} & \code{uint8} &  \\
-\code{DEGRADED = 2} & \code{uint8} & still usable, e.g. speed disagrees with the robot odometry \\
-\code{LOST = 3} & \code{uint8} & stale or jumping, do not drive on it \\
+\code{INITIALIZING} = 0 & \code{uint8} &  \\
+\code{OK} = 1 & \code{uint8} &  \\
+\code{DEGRADED} = 2 & \code{uint8} & still usable, e.g. speed disagrees with the robot odometry \\
+\code{LOST} = 3 & \code{uint8} & stale or jumping, do not drive on it \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{state} & \code{uint8} &  \\
@@ -143,13 +143,13 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{IDLE = 0} & \code{uint8} &  \\
-\code{PLANNING = 1} & \code{uint8} &  \\
-\code{FOLLOWING = 2} & \code{uint8} &  \\
-\code{REPLANNING = 3} & \code{uint8} &  \\
-\code{ARRIVED = 4} & \code{uint8} &  \\
-\code{FAILED = 5} & \code{uint8} &  \\
-\code{CANCELLED = 6} & \code{uint8} &  \\
+\code{IDLE} = 0 & \code{uint8} &  \\
+\code{PLANNING} = 1 & \code{uint8} &  \\
+\code{FOLLOWING} = 2 & \code{uint8} &  \\
+\code{REPLANNING} = 3 & \code{uint8} &  \\
+\code{ARRIVED} = 4 & \code{uint8} &  \\
+\code{FAILED} = 5 & \code{uint8} &  \\
+\code{CANCELLED} = 6 & \code{uint8} &  \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{state} & \code{uint8} &  \\
@@ -168,7 +168,7 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{BLOCKED = 0.0} & \code{float32} &  \\
+\code{BLOCKED} = 0.0 & \code{float32} &  \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{angle_min} & \code{float32} & rad \\
@@ -199,10 +199,10 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{constants}} \\
-\code{ARRIVED = 0} & \code{uint8} &  \\
-\code{INSPECTED = 1} & \code{uint8} &  \\
-\code{DEPARTED = 2} & \code{uint8} &  \\
-\code{SKIPPED = 3} & \code{uint8} &  \\
+\code{ARRIVED} = 0 & \code{uint8} &  \\
+\code{INSPECTED} = 1 & \code{uint8} &  \\
+\code{DEPARTED} = 2 & \code{uint8} &  \\
+\code{SKIPPED} = 3 & \code{uint8} &  \\
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{event} & \code{uint8} &  \\
