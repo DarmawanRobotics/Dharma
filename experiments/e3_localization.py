@@ -5,7 +5,8 @@ The follower drives three laps of the mall_loop route of dharma_sim (true pose, 
 the odometry drift of dharma_sim's drift scenario. Four tags hang at the corridor ends. On
 every run the same odometry, detections (5 Hz, 5 % outliers) and scans feed: hard replacement
 by every tag (the v0.1 rule, common.baseline), the gated EKF of dharma_localization with tags,
-and the EKF with tags and scan matching (1 Hz) on the world's occupancy grid. Errors are
+and the EKF with tags and scan matching (1 Hz) on the site map dharma_sim draws from the
+world (the map the stack gets in simulation). Errors are
 sampled at 10 Hz against the true pose.
 """
 
@@ -15,7 +16,6 @@ import sys
 
 import common  # noqa: F401  (puts the stack on sys.path)
 from common.baseline import HardReplace
-from common.gridmap import rasterize
 from common.metrics import write_rows
 from common.navigation import FollowerDriver, follower_config
 from common.rig import Rig
@@ -32,6 +32,7 @@ from dharma_localization.core.sources.scan_match import ScanMatchSource, match_c
 from dharma_sim.core.config import SimConfig
 from dharma_sim.core.lidar import LidarModel
 from dharma_sim.core.scenario import load_scenario
+from dharma_sim.core.site_fixture import OCCUPIED, rasterize
 from dharma_sim.core.world import World
 from dharma_utils.io import read_route
 from dharma_utils.math import Pose2D, angle_diff
@@ -87,9 +88,9 @@ class Estimators:
             loc.tags = dict(self.tags)
         self.hard: HardReplace | None = None
         self.hard_fused: dict[str, float] = {}
-        occupied, spec = rasterize(world)
+        spec, grid = rasterize(world)  # the site map dharma_sim draws for the stack
         self.matcher = ScanMatchSource(match_config(0.3, 6.0, 0.5), 4.0)
-        self.matcher.set_map(occupied, spec)
+        self.matcher.set_map(grid >= OCCUPIED, spec)
         self.counts = {m: {'inliers': 0, 'inliers_rejected': 0, 'outliers': 0,
                            'outliers_rejected': 0, 'scan_matches': 0, 'scan_rejected': 0}
                        for m in METHODS}  # fmt: skip
