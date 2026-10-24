@@ -7,6 +7,8 @@ drawn from the seed. Every message is delivered when it is published (no transpo
 the sensor and command latencies of the simulator apply.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from dataclasses import dataclass, field
 import math
@@ -101,7 +103,7 @@ class Rig:
         """Return the true pose."""
         return self.sim.body.pose
 
-    def run(self, until: float, stop: Callable[['Rig'], bool] | None = None):
+    def run(self, until: float, stop: Callable[[Rig], bool] | None = None):
         """Advance until the time (s) or until stop(rig) is True."""
         while self.now < until - 1e-9:
             self.tick += 1

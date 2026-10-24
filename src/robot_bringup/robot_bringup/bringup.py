@@ -4,6 +4,8 @@ Pure helpers of the bringup: argument validation and parameter files.
 No launch or ROS imports, so everything here is unit-tested without a robot.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import tempfile

@@ -12,6 +12,8 @@ the goal (150 s limit), stops (speed below 0.05 m/s after above 0.15 m/s, before
 the largest distance from the route.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import math
 import sys

@@ -1,5 +1,7 @@
 """Put the Dharma package checkouts on sys.path, so the experiments import their cores."""
 
+from __future__ import annotations
+
 import os
 from pathlib import Path
 import sys

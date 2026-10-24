@@ -1,5 +1,7 @@
 """scripts/init_project.py: pure helpers and a conversion of a copy of this repository."""
 
+from __future__ import annotations
+
 import importlib.util
 from pathlib import Path
 import py_compile

@@ -9,6 +9,8 @@ failure to the first zero command of the mux and the distance to standstill; REM
 of the fastest point of the body once settled (1.5 s after the failure to its end).
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import math
 import sys

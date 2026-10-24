@@ -1,5 +1,7 @@
 """People in a scenario: standing, or walking once the robot passes a trigger line."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import math
 

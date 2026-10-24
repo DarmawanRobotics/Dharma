@@ -1,5 +1,7 @@
 """Figures of the paper (matplotlib, PDF, one IEEE column wide)."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import matplotlib

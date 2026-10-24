@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from dharma_utils.testing import check_package

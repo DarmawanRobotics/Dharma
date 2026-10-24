@@ -10,6 +10,8 @@ world (the map the stack gets in simulation). Errors are
 sampled at 10 Hz against the true pose.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, replace
 import math
 import sys

@@ -6,6 +6,8 @@ accepts params_file, robot_params, use_sim_time and log_level (DESIGN.md section
 non-empty arguments are passed, so an unset one never hides a value from a parameter file.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 HEALTH_NODE = 'health_monitor_node'

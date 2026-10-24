@@ -7,6 +7,8 @@ output of the reactive avoidance policy on the front scan, which the bringup alw
 emergency stop holds the follower in every avoidance mode).
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from dataclasses import replace
 

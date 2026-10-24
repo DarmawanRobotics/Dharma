@@ -1,5 +1,7 @@
 """Argument validation and parameter files (no ROS)."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest

@@ -7,6 +7,8 @@ evaluation: a cloud with fewer than 100 raw points gave an all-zero safety scan 
 mux read as free) and nothing was published while no cloud arrived.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import numpy as np

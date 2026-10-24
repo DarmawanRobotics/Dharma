@@ -9,6 +9,8 @@ that shows the person to standstill, the smallest clearance of the footprint and
 time (appearance to the first braking of the body, against the model's t_r).
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import math
 import sys
