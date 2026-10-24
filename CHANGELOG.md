@@ -14,6 +14,9 @@ versions follow [SemVer](https://semver.org).
   data, loguru from pip); scripts and experiments jobs on Python 3.8.
 - Bringup: a launch warning for `/**` parameters besides `robot.*` (Foxy applies a node's own
   section after `/**`).
+- Experiments: E5, backing up after the inspection at a stop point that faces a wall (360° scan,
+  `inspection.reverse_distance_m` 1 m; no back-up, free, a person behind); E1 also with
+  `field.human_speed` 0 (the braking model alone).
 
 ### Changed
 
@@ -21,6 +24,10 @@ versions follow [SemVer](https://semver.org).
   (`tooling/`), no 3.9+ runtime features in the experiments and tools,
   `dharma_utils.math.default_rng` instead of `np.random.default_rng`.
 - Experiments: avoidance policies get the robot profile (dharma_navigation main).
+- Experiments rerun on dharma_navigation #11 and dharma_perception #12: the follower reads the
+  mux state (armed handshake) and the measured twist, avoidance looks around the direction of
+  travel; results, tables, figure and the paper's evaluation, abstract and conclusion updated;
+  the README's findings table became "Findings and fixes" with before / after numbers.
 - Docs: Foxy | Humble | Jazzy in the README, wiki, manual, paper and CI diagram.
 
 ### Fixed
