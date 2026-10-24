@@ -1,5 +1,7 @@
 """Metrics of the runs and the CSV files of the results."""
 
+from __future__ import annotations
+
 import csv
 from dataclasses import asdict, fields, is_dataclass
 import math

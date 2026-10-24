@@ -6,6 +6,8 @@ inputs), docs/paper/tables/results.tex (LaTeX macros for the numbers in the text
 docs/paper/figures/*.pdf (matplotlib, when it is installed).
 """
 
+from __future__ import annotations
+
 import math
 from pathlib import Path
 

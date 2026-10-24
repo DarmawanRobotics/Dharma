@@ -6,6 +6,8 @@ Run E1-E4 for every seed and write results/*.csv, then the paper's tables and fi
     python3 experiments/run_all.py --report     # tables and figures from the committed CSVs
 """
 
+from __future__ import annotations
+
 import argparse
 from concurrent.futures import ProcessPoolExecutor
 import os

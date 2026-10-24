@@ -9,6 +9,8 @@ outlier instead: a heading error of 5-25 deg and a 0.1-0.4 m position error, lik
 ambiguity of a small planar tag.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import math
 

@@ -14,6 +14,8 @@ timeout. Written to results/e2e_sim.csv: completion, time, stops, smallest clear
 people and to the walls, largest distance from the route, protective field states seen.
 """
 
+from __future__ import annotations
+
 import argparse
 from collections import Counter
 from pathlib import Path

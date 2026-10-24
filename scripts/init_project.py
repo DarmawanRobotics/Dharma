@@ -11,6 +11,8 @@ script, the manual, the paper and the diagram sources unless --keep-docs), reset
 to 0.1.0 and rewrites README.md and CHANGELOG.md. Commit the result.
 """
 
+from __future__ import annotations
+
 import argparse
 from dataclasses import dataclass
 import os

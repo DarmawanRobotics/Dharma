@@ -10,6 +10,8 @@ The site (default mall_loop under /tmp/dharma_sim/sites) is drawn from the world
 map yet. config/sim.yaml adapts the stack to the simulator (PointCloud2 input, no camera).
 """
 
+from __future__ import annotations
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 

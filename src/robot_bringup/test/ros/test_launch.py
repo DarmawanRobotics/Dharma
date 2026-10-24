@@ -1,5 +1,7 @@
 """The launch files: arguments, composition into scoped includes, merged parameters."""
 
+from __future__ import annotations
+
 import importlib.util
 import os
 from pathlib import Path

@@ -1,5 +1,7 @@
 """Launch-side helpers shared by robot.launch.py and sim.launch.py."""
 
+from __future__ import annotations
+
 from dataclasses import replace
 import os
 

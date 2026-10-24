@@ -14,6 +14,8 @@ time is from the step command to where that line meets the speed before the step
 the mux, transport, the driver and the odometry).
 """
 
+from __future__ import annotations
+
 import argparse
 import csv
 from dataclasses import dataclass

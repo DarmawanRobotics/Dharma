@@ -9,6 +9,8 @@ services come from dharma_interfaces/msg and srv. Output: docs/manual/generated/
 Needs Python 3.10+ and numpy (the controller modules import it).
 """
 
+from __future__ import annotations
+
 import argparse
 import importlib
 from pathlib import Path

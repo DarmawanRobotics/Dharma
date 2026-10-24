@@ -7,6 +7,8 @@ a point at the robot (a BLOCKED or zero range) is skipped, NaN sectors are free,
 than 0.5 s (receive time) stops AUTO, and the field is off in REMOTE (the v0.1 default).
 """
 
+from __future__ import annotations
+
 import math
 
 import numpy as np
