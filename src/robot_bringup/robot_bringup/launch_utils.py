@@ -6,7 +6,13 @@ from dataclasses import replace
 import os
 
 from ament_index_python.packages import PackageNotFoundError, get_package_share_directory
-from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, LogInfo
+from launch.actions import (
+    DeclareLaunchArgument,
+    GroupAction,
+    IncludeLaunchDescription,
+    LogInfo,
+    UnsetLaunchConfiguration,
+)
 from launch.launch_description_sources import (
     AnyLaunchDescriptionSource,
     PythonLaunchDescriptionSource,
@@ -14,6 +20,7 @@ from launch.launch_description_sources import (
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration
 from launch_ros.actions import SetRemap
 
+from dharma_utils.ros.launch import group
 from robot_bringup import bringup, stack
 
 PACKAGE = 'robot_bringup'
@@ -35,6 +42,8 @@ ARGUMENTS = {
     'camera_info': (None, '', 'camera info topic; empty: the perception default'),
     'health': (None, 'true', 'start the health monitor'),
 }
+# Arguments only sim.launch.py declares (hidden from the includes like ARGUMENTS).
+SIM_ONLY = ('world', 'scenario', 'rviz')
 
 
 def share(package: str, *path: str) -> str:
@@ -107,13 +116,25 @@ def resolve(arg, sim: bool = False):
     return options, notes
 
 
+def isolated(actions: list) -> GroupAction:
+    """
+    Return actions in their own scope that the bringup's own arguments never reach.
+
+    Humble+ drops every caller configuration (forwarding=False). Foxy cannot, so the bringup's
+    argument names are also unset inside the scope (a no-op where they are already dropped):
+    an include sees only the arguments passed to it, on every distro.
+    """
+    hidden = [UnsetLaunchConfiguration(name) for name in (*ARGUMENTS, *SIM_ONLY)]
+    return group([*hidden, *actions], scoped=True, forwarding=False)
+
+
 def include_action(include: stack.Include) -> GroupAction:
     """Return a package launch in its own scope: only its explicit arguments reach it."""
     path = share(include.package, 'launch', include.launch_file)
     remaps = [SetRemap(src=src, dst=dst) for src, dst in include.remappings]
     source = PythonLaunchDescriptionSource(path)
     launch = IncludeLaunchDescription(source, launch_arguments=include.arguments.items())
-    return GroupAction([*remaps, launch], scoped=True, forwarding=False)
+    return isolated([*remaps, launch])
 
 
 def driver_action(value: str, options: stack.Options) -> GroupAction | None:
@@ -128,7 +149,7 @@ def driver_action(value: str, options: stack.Options) -> GroupAction | None:
     args = stack.non_empty({'namespace': options.robot_ns, 'use_sim_time': options.use_sim_time})
     source = AnyLaunchDescriptionSource(path)
     launch = IncludeLaunchDescription(source, launch_arguments=args.items())
-    return GroupAction([launch], scoped=True, forwarding=False)
+    return isolated([launch])
 
 
 def performer(context):
