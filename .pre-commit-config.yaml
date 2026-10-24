@@ -1,4 +1,6 @@
 # pip install pre-commit && pre-commit install   (CI runs the same hooks)
+# generated diagram exports (make -C docs diagrams) are committed as they come out of draw.io
+exclude: ^docs/diagrams/(pdf|svg)/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

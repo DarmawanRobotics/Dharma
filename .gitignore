@@ -14,3 +14,4 @@ __pycache__/
 .env
 *.swp
 .DS_Store
+/docs/build/
