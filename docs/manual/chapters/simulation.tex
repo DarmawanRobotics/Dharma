@@ -145,14 +145,17 @@ launch contract of Section~\ref{sec:launch}), \code{world}, \code{scenario}, \co
 \section{Evaluation protocol}
 \label{sec:eval-protocol}
 
-The experiments of the paper run on the mall world with these models: E1 stopping distance
-against $D(v)$, E2 blind LiDAR in AUTO and REMOTE, E3 localization error with and without the EKF
-and scan matching under seeded odometry drift (the \code{drift} model), E4 path shift clearance
-and completion time with standing and crossing people (the \code{person_crossing} pattern).
-Every run is defined by a scenario file and its seed, so a result can be reproduced exactly and a
-regression shows in CI. The measured results, the number of seeds and runs per condition and
-the scripts that produce them are reported with the paper's evaluation (Section~VI of the paper
-in \code{docs/paper}), not duplicated here.
+The experiments of the paper are closed-loop simulations built from the pure \code{core/}
+modules of the packages: \pkg{dharma_sim}'s world, body, LiDAR, odometry drift, latency and
+scenario models drive the perception, control, localization and navigation cores at the node
+rates, without ROS, deterministic per seed. E1 measures the stopping distance against $D(v)$,
+E2 a blind LiDAR in AUTO and REMOTE, E3 the localization error with and without the EKF and scan
+matching under seeded odometry drift, E4 the path shift clearance and completion time with
+standing and crossing people. One end-to-end run of the real nodes
+(\texttt{ros2 launch robot\_bringup sim.launch.py}) checks the composition. The scripts, the raw
+results and the seeds of every condition are in the \code{experiments/} folder of the Dharma hub
+repository; the measured results are reported in the paper's evaluation (Section~VI of
+\code{docs/paper}) and not duplicated here.
 
 \section{Parameters}
 
