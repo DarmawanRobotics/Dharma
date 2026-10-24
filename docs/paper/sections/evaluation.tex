@@ -3,102 +3,61 @@
 
 \input{tables/results}
 
-\textbf{Simulation protocol.} E1--E4 close the loop over the pure cores at the node rates:
-the simulator core moves an omnidirectional body with the acceleration limits of the profile
-and detects collisions; its LiDAR follows the Mid-360 (vertical field of view from $-7^\circ$ to
-$52^\circ$ at the mount height, range limits, noise); odometry drifts as $\T{odom}{base}
-\leftarrow \T{odom}{base} \exp(\vect{\xi})$ with $\vect{\xi} \sim \mathcal{N}(\vect{0},
-\boldsymbol{\Sigma}\,\Delta s)$ plus a yaw bias and a scale error; stamps lag by 50~ms (LiDAR)
-and commands by 20~ms. Perception's sector pipeline and watchdog run at 10~Hz, the follower
-with the bringup's reactive policy (VFH) at 20~Hz, and every command passes the mux's arbiter
-and gate, in 10~ms ticks whose task phases are drawn from the seed. All parameters are the
-package defaults with the default profile ($a = 0.6$~m/s$^2$, $\tr = 0.25$~s, field margin
-$m = 0.15$~m); localization is the true pose except in E3, and the health scale and the
-planner's replanning are not in the loop. Each condition runs seeds 1--20; tables give mean
-$\pm$ standard deviation over the 20 runs unless stated. The scripts, worlds and raw results
-are in \texttt{experiments/} of the hub; one command reruns them and regenerates the tables.
+\textbf{Protocol.} E1--E4 close the loop over the pure cores at the node rates: the simulator
+core (acceleration limits, collisions, Mid-360 ray casting, odometry drift
+$\vect{\xi} \sim \mathcal{N}(\vect{0}, \boldsymbol{\Sigma}\,\Delta s)$, 50/20~ms sensor/command
+latency), perception, the follower with VFH and the mux, all with package defaults and ideal
+localization except in E3. Each condition runs seeds 1--20 (mean $\pm$ std);
+\texttt{experiments/} in the hub reruns them and regenerates the tables.
 
-\textbf{E1: stopping distance.} The robot cruises at $v$ in AUTO (a command stream at 20~Hz)
-when a person (radius 0.25~m) appears on its axis $D(v) + m$ ahead of the front edge, the
-nearest appearance from which \eqref{eq:braking} still promises a stop with the margin.
-Table~\ref{tab:stop} gives the distance from the first safety scan that shows the person to
-standstill and the smallest clearance over all runs. The robot always stopped within $D(v)$
-(at most \EOneRatioMax\,$D(v)$) and never closer than \EOneClearMin~m, with no collision in
-\EOneRuns{} runs; the body started braking \EOneReactMin--\EOneReactMax~s after the person
-appeared, inside $\tr$. The field spends almost the whole room because it lowers the speed
-along $v^*(d)$ instead of braking at once; the margin holds because the simulated body brakes
-at exactly $a$, which a real robot must be shown to reach.
+\textbf{E1: stopping distance.} At speed $v$ a person appears on the robot's axis $D(v) + m$
+ahead, the last point from which \eqref{eq:braking} promises a stop with the margin. From the
+first scan showing it, the robot stopped after \EOneMeasuredA, \EOneMeasuredB, \EOneMeasuredC{}
+and \EOneMeasuredD~m (std $\le$ \EOneStdMax~m) at 0.2--0.8~m/s, against $D(v) =$
+\EOneModelA, \EOneModelB, \EOneModelC{} and \EOneModelD~m; in \EOneRuns{} runs the clearance
+never fell below \EOneClearMin~m and braking began \EOneReactMin--\EOneReactMax~s after the
+appearance, inside $\tr$; the body brakes at exactly $a$ here.
 
-\begin{table}[t]
-  \centering
-  \caption{E1: braking model $D(v)$, measured stopping distance (mean $\pm$ std) and smallest
-    clearance (all 20 runs)}
-  \label{tab:stop}
-  \input{tables/e1}
-\end{table}
+\textbf{E2: blind LiDAR.} At 0.5~m/s the LiDAR delivers clouds without points or with 50
+points for 4~s: v0.2 commanded zero within \ETwoBlindZeroMax~s and stood within
+\ETwoBlindDistanceMax~m; v0.1, re-implemented as a baseline (an all-zero blind scan that its field skipped
+as free), drove on at full speed. A silent LiDAR stopped both after the 0.5~s timeout
+(at most \ETwoSilentZeroMax~s). In REMOTE v0.2 crept at \ETwoCreepMax~m/s, v0.1 kept
+0.5~m/s.
 
-\textbf{E2: blind LiDAR.} The robot drives at 0.5~m/s when the LiDAR fails for 4~s: silent (no
-cloud), empty (clouds without points) or sparse (50 points, below the blindness threshold of
-100). Table~\ref{tab:blind} gives, in AUTO, the time $t_0$ from the failure to the first zero
-command and the distance $d$ to standstill, and in REMOTE the speed of the fastest body point
-during the failure, against v0.1, re-implemented as a baseline (a blind cloud gave an all-zero
-scan, which the field skipped as free; no perception watchdog; field off in REMOTE). v0.2
-stops an empty or sparse scan within one scan period and a silent sensor at the 0.5~s
-watchdog, and caps REMOTE at the creep speed; v0.1 drove on at full speed whenever clouds kept
-arriving and in REMOTE.
+\textbf{E3: localization.} The follower drives three laps (\EThreeDistance~m) of the
+simulator's mall route with its drift scenario (1\,\% scale, $0.1^\circ$/m yaw bias) past
+four tags, detected at 5~Hz with the noise the tag source assumes plus 5\,\% outliers
+(5--25$^\circ$, 0.1--0.4~m); all estimators get the same inputs (Table~\ref{tab:loc}). Hard
+replacement rejected \EThreeHardReplaceInliersRejected\,\% of the good detections, as its
+0.5~m threshold on \frm{map}$\to$\frm{odom} grows with the distance from the odometry origin;
+the gate rejected \EThreeEkfTagsOutliersRejected\,\% of the outliers and
+\EThreeEkfTagsInliersRejected\,\% of the good detections.
 
 \begin{table}[t]
   \centering
-  \caption{E2: blind LiDAR in AUTO (time to zero command, distance to standstill) and REMOTE
-    (largest settled creep speed of the fastest body point), 20 runs each}
-  \label{tab:blind}
-  \input{tables/e2}
-\end{table}
-
-\textbf{E3: localization.} The follower drives three laps (\EThreeDistance~m) of the mall
-route of the simulator with the odometry drift of its drift scenario (1~cm$/\sqrt{\mathrm{m}}$,
-$0.3^\circ/\sqrt{\mathrm{m}}$, 1\,\% scale, $0.1^\circ$/m yaw bias); four tags hang at the
-corridor ends. A forward camera detects them at 5~Hz up to 5~m with the noise the tag source
-assumes, and 5\,\% of the detections are outliers (heading 5--25$^\circ$, position
-0.1--0.4~m off, like the pose ambiguity of a small tag). The three estimators get the same
-odometry, detections and scans; scan matching runs at 1~Hz on the site map the simulator draws.
-Table~\ref{tab:loc} and Fig.~\ref{fig:loc} show the errors against the true pose. Hard
-replacement rejected \EThreeHardReplaceInliersRejected\,\% of the good detections, because
-its 0.5~m threshold compares the change of \frm{map}$\to$\frm{odom}, which grows with the
-distance from the odometry origin, and still accepted \EThreeHardReplaceOutliersAccepted\,\% of the outliers; the
-chi-square gate rejected \EThreeEkfTagsOutliersRejected\,\% of the outliers and
-\EThreeEkfTagsInliersRejected\,\% of the good detections, and no scan match
-(\EThreeScanRejected\,\% rejected).
-
-\begin{table}[t]
-  \centering
-  \caption{E3: localization error under seeded drift: RMSE of position (ATE), largest position
-    error and RMSE of heading per run}
+  \caption{E3: position RMSE (ATE), largest position error, heading RMSE}
   \label{tab:loc}
+  \footnotesize
   \input{tables/e3}
 \end{table}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{figures/e3_error}
-  \caption{E3, seed 1: position error over the distance driven.}
-  \label{fig:loc}
-\end{figure}
-
-\textbf{E4: path shift.} The follower drives 20~m along the centre of a 3~m corridor: a person
-stands on the route (\emph{on}) or both standing people stand 0.6--0.9~m beside it on opposite
-sides (\emph{beside}), a third walks the same way at 0.2~m/s and a fourth crosses at 0.6~m/s
-3~m ahead of the robot; people do not give way. Table~\ref{tab:shift} gives the completed runs,
-their time, the stops before the goal, the smallest clearance to a person and the largest
-distance from the route. \todo{E4 text}
-
 \begin{table}[t]
   \centering
-  \caption{E4: corridor with people (20 runs each): completed, time and stops (completed runs,
-    mean $\pm$ std), smallest clearance and largest offset (all runs)}
+  \caption{E4: completed runs, their time and stops; smallest clearance, largest offset}
   \label{tab:shift}
-  \setlength{\tabcolsep}{3pt}
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
   \input{tables/e4}
 \end{table}
+
+\textbf{E4: path shift.} The follower drives 20~m along a 3~m corridor past a person standing on
+the route (\emph{on}) or two beside it, one walking ahead and one crossing; nobody gives way
+(Table~\ref{tab:shift}). Path shift passed in 37 of 40 runs; reactive avoidance never passed a
+person on the route, as the guard stops where the VFH emergency cone holds the robot and the
+VFH gap heading ignores the body width. The failures expose defects: path shift deadlocks when it stops
+within its stop margin before reaching its offset; the follower reports \textsc{following}
+while the mux field holds the robot; a walking person once brushed the stopped robot, as the
+field ignores the speed of people~\cite{isots15066}.
 
 \textbf{End to end.} \todo{e2e}
