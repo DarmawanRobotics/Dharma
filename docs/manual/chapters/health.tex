@@ -6,7 +6,7 @@
 \topic{health/status} (\code{HealthStatus}, latched: \code{level} OK / WARN / ERROR, \code{issues}
 with one line per problem, errors first, and \code{speed_scale} in $[0, 1]$) and a
 \topic{diagnostics} array with one \code{DiagnosticStatus} per checked item, named
-\code{health: <item>}, for \code{rqt_robot_monitor}. It reads the shared \param{robot.*} profile
+\texttt{health: <item>}, for \code{rqt_robot_monitor}. It reads the shared \param{robot.*} profile
 for the frames of the odometry chain.
 
 \section{Checks}
@@ -28,7 +28,7 @@ item, OK included, so a diagnostic never disappears when it recovers.
   \item[TF] (\code{tf:<parent>-><child>}). The ages of every dynamic edge
     (\code{TfCache.edge_ages}) are kept over \param{tf.window_sec} and classified
     (\code{core/checks/tf.py}): a fresh edge is OK; a stamp more than \param{tf.max_future_sec}
-    ahead is a clock offset (\code{cause: clock}); a late edge whose stamp stopped advancing is a
+    ahead is a clock offset (\texttt{cause: clock}); a late edge whose stamp stopped advancing is a
     stopped publisher (\code{stopped}); late ages that stay within \param{offset_jitter_sec} of
     each other are a steady source clock offset (\code{clock}), e.g.\
     ``\texttt{camera\_init->body 1.8 s old, steady (source clock offset?)}''; late ages that vary are

@@ -184,7 +184,7 @@ path_follower_node:
 unit and range, and \texttt{ros2 param set /path\_follower\_node carrot\_p.gain -1.0} is refused
 with the range. The controller can also be switched at runtime (\param{controller} is live); the
 follower rebuilds it with the robot's limits. An avoidance policy works the same way: subclass
-\code{AvoidancePolicy}, implement \code{compute(angles, ranges, scan)} returning an
+\code{AvoidancePolicy}, implement \texttt{compute(angles, ranges, scan)} returning an
 \code{AvoidanceOut} (blocked and unknown sectors arrive as range 0) and register it under
 \code{dharma.avoidance}.
 
@@ -285,7 +285,7 @@ from. It holds:
   \item[\code{dharma.repos}, \code{external.repos}] every Dharma repository at \code{main}; the
     Livox driver (\code{livox_ros_driver2}), FAST-LIO and, commented out, the Leg-KILO fork.
   \item[\code{docker/}, \code{compose.yaml}, \code{.devcontainer/}] a development image for
-    Humble and Jazzy (\code{ARG ROS_DISTRO}, \code{ros:<distro>-ros-base}) with an XFCE desktop over
+    Humble and Jazzy (\texttt{ARG ROS\_DISTRO}, \code{ros:<distro>-ros-base}) with an XFCE desktop over
     VNC and noVNC; one compose service per distribution (profiles \code{humble} and
     \code{jazzy}), separate build, install and log volumes per distribution (a Humble and a
     Jazzy build never mix), ports bound to localhost (Humble 5901 / 6080, Jazzy 5902 / 6081).

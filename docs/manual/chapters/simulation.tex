@@ -4,7 +4,7 @@
 \pkg{dharma_sim} is a software-in-the-loop robot: one node, \code{sim_robot_node}, replaces the
 robot driver, the Livox Mid-360, its IMU and the LiDAR-inertial estimator, so the whole stack
 runs without hardware, in CI and on a laptop. It is kinematic (no Gazebo, no GPU). A product runs
-its own bringup against it with \code{odometry method:=external} and drives it like the real
+its own bringup against it with odometry \code{method:=external} and drives it like the real
 robot; its end-to-end tests run the same way.
 
 \section{Why the simulator models errors}
