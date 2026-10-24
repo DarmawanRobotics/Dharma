@@ -139,7 +139,7 @@ def readme(o: Options) -> str:
 **A robot product on the Dharma autonomy stack.**
 
 [![CI]({repo}/actions/workflows/ci.yml/badge.svg?branch=main)]({repo}/actions/workflows/ci.yml)
-[![ROS 2](https://img.shields.io/badge/ROS%202-Humble%20%7C%20Jazzy-22314E?logo=ros&logoColor=white)](https://docs.ros.org/)
+[![ROS 2](https://img.shields.io/badge/ROS%202-Foxy%20%7C%20Humble%20%7C%20Jazzy-22314E?logo=ros&logoColor=white)](https://docs.ros.org/)
 [![Dharma](https://img.shields.io/badge/stack-Dharma-4A78C2)](dharma.repos)
 
 </div>
@@ -153,7 +153,7 @@ the stack (`config/stack.yaml`) and one launch for everything. The Dharma packag
 ## Quick start
 
 ```bash
-scripts/dev.sh up                     # dev container (scripts/dev.sh --distro jazzy up)
+scripts/dev.sh up                     # dev container (--distro foxy|humble|jazzy)
 scripts/dev.sh build && scripts/dev.sh test
 scripts/dev.sh shell
 ros2 launch {o.package} sim.launch.py rviz:=true                  # no robot needed
