@@ -1,0 +1,5 @@
+# The bringup does not pass sites_dir to navigation: point the route loader at the simulator's
+# sites directory, or navigation/load_path refuses the simulator's route.
+path_loader_node:
+  ros__parameters:
+    sites_dir: /tmp/dharma_sim/sites
