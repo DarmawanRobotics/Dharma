@@ -53,12 +53,12 @@ the gate rejected \EThreeEkfTagsOutliersRejected\,\% of the outliers and
 
 \textbf{E4: path shift.} The follower drives 20~m along a 3~m corridor past a person standing on
 the route (\emph{on}) or two beside it, one walking ahead and one crossing; nobody gives way
-(Table~\ref{tab:shift}). A first run exposed defects, now fixed: path shift deadlocked short of
-its offset or lost it while the robot stood (17/20 on the route, now 20/20), a walking person
-brushed the stopped robot (now 0.29~m), and a held robot was reported \textsc{following} (now
-\textsc{blocked}). Reactive avoidance still never passed a person on the route: the guard holds
-the VFH heading. Without path shift 8 and 7 of 20 runs passed beside the route (13 before), as
-the guard now keeps the mux's margin.
+(Table~\ref{tab:shift}). A first run exposed defects, now fixed: path shift deadlocked or lost
+its offset while the robot stood (17/20 on the route, now 20/20), a walking person brushed the
+stopped robot (now 0.28~m), and a held robot was reported \textsc{following}. A second round
+swept the footprint along the command on the mux's points: beside the route reactive avoidance
+passed in 20 and no avoidance in 13 of 20 runs (8 and 7 before; the rest leave 0.07--0.12~m
+beside the body). On the route VFH still finds no gap wide enough and stops.
 
-\textbf{End to end.} On the real nodes the robot drove the 27~m mall route past two standing
-people in 83~s (79~s before the fixes), at least 0.23~m from them and 0.39~m from walls.
+\textbf{End to end.} On the real nodes (first round) the robot drove the 27~m mall route past
+two standing people in 83~s (79~s before), at least 0.23~m from them and 0.39~m from walls.

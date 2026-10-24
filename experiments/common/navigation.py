@@ -72,10 +72,11 @@ class FollowerDriver:
         rig.listeners.append(self.on_scan)
 
     def on_scan(self, scan, now: float):
-        """Take a safety scan (points, blocked) and run the avoidance policy on the front scan."""
+        """Keep the safety scan (edge points, sector centres, blocked); run the avoidance."""
         s = scan.safety_layout
-        sectors = SectorScanData.of(s.angle_min, s.increment, s.range_max, scan.safety).points()
-        self.scan = (sectors.points, sectors.any_blocked, now)
+        data = SectorScanData.of(s.angle_min, s.increment, s.range_max, scan.safety)
+        sectors, centres = data.points(), data.points(edges=False)  # path shift, guard
+        self.scan = (sectors.points, centres.points, sectors.any_blocked, now)
         f = scan.front_layout
         front = SectorScanData.of(f.angle_min, f.increment, f.range_max, scan.front)
         vx, at = self.last_command
@@ -96,8 +97,8 @@ class FollowerDriver:
         scan = avoidance = None
         age = float('inf')
         if self.scan is not None:
-            points, blocked, at = self.scan
-            scan = ScanInput(points, blocked, now - at)
+            points, centres, blocked, at = self.scan
+            scan = ScanInput(points, blocked, now - at, centres)
         if self.avoidance is not None:
             avoidance, at = self.avoidance
             age = now - at
