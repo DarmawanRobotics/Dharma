@@ -36,13 +36,157 @@
 \end{itemize}
 
 \section{Adding a plugin}
+\label{sec:plugin-example}
 
-A product adds a controller or an avoidance policy without forking \pkg{dharma_navigation}:
-subclass \code{PathController} or \code{AvoidancePolicy} with a \code{Config} dataclass, and
-register it under the entry point group \code{dharma.controllers} or \code{dharma.avoidance} in its
-\code{setup.py}. Its parameters appear as \code{<name>.*} on the node and are validated like every
-other parameter.
-\todo{a complete minimal example package (phase 2)}
+Algorithm families are open to other packages through Python entry points
+(\code{dharma_utils.plugins.Registry}): a product adds an implementation without forking.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}lllX@{}}
+  \toprule
+  Family & Base class & Entry point group & Selected by \\
+  \midrule
+  path controllers & \code{PathController} & \code{dharma.controllers} &
+    \param{controller} of \code{path_follower_node} \\
+  avoidance policies & \code{AvoidancePolicy} & \code{dharma.avoidance} &
+    \param{policy} of \code{obstacle_avoidance_node} \\
+  health checks & \code{Check} & \code{dharma_health.checks} &
+    \param{extra_checks} of \code{health_monitor_node} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+The node looks the name up in the registry, which loads every entry point of its group on first
+use and checks that the class derives from the base class; an unknown name is refused with the
+list of available ones. \code{path_follower_node} declares the \code{Config} dataclass of every
+registered controller as parameters \code{<name>.*} at start, so a plugin controller's
+parameters have descriptors, ranges and live validation like the built-in ones. In 0.2.0 a
+plugin avoidance policy runs with its \code{Config} defaults (the node declares parameters only
+for the built-in policies), and a plugin health check is built without arguments.
+
+\subsection{Example: a controller package}
+
+A complete package \code{acme_controllers} with one controller, \code{carrot_p}, that turns
+toward a point ahead on the route in proportion to its bearing:
+\begin{lstlisting}
+acme_controllers/
+  acme_controllers/__init__.py         (empty)
+  acme_controllers/carrot_p.py
+  test/test_carrot_p.py
+  resource/acme_controllers            (empty, ament index marker)
+  package.xml  setup.py  setup.cfg
+\end{lstlisting}
+
+\code{acme_controllers/carrot_p.py}: a frozen configuration dataclass and the controller. The base
+class applies the avoidance biases and the path shift offset is in the request, so
+\code{compute} only tracks the (offset) route.
+\begin{lstlisting}[language=Python]
+"""Carrot P: turn toward a point ahead on the route, proportionally to its bearing."""
+
+from dataclasses import dataclass
+import math
+
+from dharma_navigation.core.controllers import Command, PathController, TrackRequest
+from dharma_navigation.core.controllers.base import carrot, to_body
+from dharma_utils.config import param
+
+
+@dataclass(frozen=True)
+class CarrotPConfig:
+    """Parameters, declared as carrot_p.* on path_follower_node."""
+
+    lookahead: float = param(0.8, min=0.1, max=5.0, unit='m', doc='carrot ahead on the route')
+    gain: float = param(1.5, min=0.0, max=10.0, unit='1/s', doc='yaw rate per rad of bearing')
+
+
+class CarrotPController(PathController):
+    """Drive at the requested speed, slower when the carrot is off to the side."""
+
+    Config = CarrotPConfig
+
+    def compute(self, request: TrackRequest) -> Command:
+        """Return the forward speed and a yaw rate proportional to the carrot bearing."""
+        x, y = to_body(request.pose, carrot(request, self.config.lookahead))
+        bearing = math.atan2(y, x)
+        speed = request.speed * max(0.0, math.cos(bearing))
+        return Command(speed, 0.0, self.clamp_wz(self.config.gain * bearing))
+\end{lstlisting}
+
+\code{setup.py} registers the class under the group (no decorator: the entry point is the
+registration):
+\begin{lstlisting}[language=Python]
+from setuptools import find_packages, setup
+
+setup(
+    name='acme_controllers',
+    version='0.1.0',
+    packages=find_packages(exclude=['test', 'test.*']),
+    data_files=[
+        ('share/ament_index/resource_index/packages', ['resource/acme_controllers']),
+        ('share/acme_controllers', ['package.xml']),
+    ],
+    install_requires=['setuptools'],
+    extras_require={'test': ['pytest']},
+    zip_safe=True,
+    maintainer='ACME Robotics',
+    maintainer_email='dev@example.com',
+    description='A path controller plugin for Dharma.',
+    license='Apache-2.0',
+    entry_points={
+        'dharma.controllers': ['carrot_p = acme_controllers.carrot_p:CarrotPController'],
+    },
+)
+\end{lstlisting}
+
+\code{package.xml} declares \code{<exec_depend>dharma_navigation</exec_depend>},
+\code{<test_depend>python3-pytest</test_depend>} and \code{<build_type>ament_python</build_type>};
+\code{setup.cfg} has the usual \code{script_dir} / \code{install_scripts} lines.
+\code{test/test_carrot_p.py} checks the registration and the behaviour on a kinematic robot:
+\begin{lstlisting}[language=Python]
+import math
+
+from acme_controllers.carrot_p import CarrotPController
+from dharma_navigation.core.controllers import CONTROLLERS, ControllerLimits, TrackRequest
+from dharma_navigation.core.path.route import Route
+from dharma_utils.io import RoutePoint
+from dharma_utils.math import Pose2D
+
+
+def test_registered_through_the_entry_point():
+    assert CONTROLLERS.get('carrot_p') is CarrotPController
+
+
+def test_converges_onto_a_straight_route():
+    route = Route.from_points([RoutePoint(0.1 * i, 0.0) for i in range(101)])
+    controller = CarrotPController(limits=ControllerLimits(max_wz=1.0))
+    pose, dt = Pose2D(0.0, 0.5, 0.0), 0.05
+    for _ in range(200):
+        s = max(0.0, min(pose.x, route.length))
+        cmd = controller.update(TrackRequest(route, s, pose, speed=0.5, dt=dt))
+        yaw = pose.yaw + cmd.wz * dt
+        x = pose.x + cmd.vx * math.cos(yaw) * dt
+        pose = Pose2D(x, pose.y + cmd.vx * math.sin(yaw) * dt, yaw)
+    assert abs(pose.y) < 0.05 and pose.x > 3.0
+\end{lstlisting}
+
+Build it next to the stack and select it in the product's parameter file:
+\begin{lstlisting}
+colcon build --packages-select acme_controllers
+colcon test --packages-select acme_controllers && colcon test-result --verbose
+\end{lstlisting}
+\begin{lstlisting}
+path_follower_node:
+  ros__parameters:
+    controller: carrot_p
+    carrot_p: {lookahead: 0.8, gain: 1.5}
+\end{lstlisting}
+\texttt{ros2 param describe /path\_follower\_node carrot\_p.lookahead} then shows the description,
+unit and range, and \texttt{ros2 param set /path\_follower\_node carrot\_p.gain -1.0} is refused
+with the range. The controller can also be switched at runtime (\param{controller} is live); the
+follower rebuilds it with the robot's limits. An avoidance policy works the same way: subclass
+\code{AvoidancePolicy}, implement \code{compute(angles, ranges, scan)} returning an
+\code{AvoidanceOut} (blocked and unknown sectors arrive as range 0) and register it under
+\code{dharma.avoidance}.
 
 \section{Code style}
 
@@ -133,16 +277,63 @@ Discovery is limited to localhost in CI (\code{ROS_LOCALHOST_ONLY}, \code{ROS_AU
 \end{itemize}
 
 \section{The template repository}
+\label{sec:template}
 
-The \code{Dharma} repository is the hub of the stack and a GitHub template. It holds
-\code{dharma.repos} (every Dharma repository at \code{main}), \code{external.repos}
-(\code{livox_ros_driver2}, FAST-LIO, optionally the Leg-KILO fork), a Docker development
-environment for Humble and Jazzy (desktop over VNC and noVNC), \code{scripts/dev.sh} and
-\code{scripts/setup.sh}, the canonical tooling files, the placeholder bringup package
-\code{robot_bringup} (robot profile, stack overrides, \code{robot.launch.py} composing the package
-launch files, \code{sim.launch.py} with the simulator) and this documentation. A new product is
-created with ``Use this template'' and \texttt{scripts/init\_project.py --name <Repo> --package
-<bringup> --robot-ns <ns>}. \todo{verify against the finished template repository (phase 2)}
+The \code{Dharma} repository is the hub of the stack and a GitHub template a robot product starts
+from. It holds:
+\begin{description}
+  \item[\code{dharma.repos}, \code{external.repos}] every Dharma repository at \code{main}; the
+    Livox driver (\code{livox_ros_driver2}), FAST-LIO and, commented out, the Leg-KILO fork.
+  \item[\code{docker/}, \code{compose.yaml}, \code{.devcontainer/}] a development image for
+    Humble and Jazzy (\code{ARG ROS_DISTRO}, \code{ros:<distro>-ros-base}) with an XFCE desktop over
+    VNC and noVNC; one compose service per distribution (profiles \code{humble} and
+    \code{jazzy}), separate build, install and log volumes per distribution (a Humble and a
+    Jazzy build never mix), ports bound to localhost (Humble 5901 / 6080, Jazzy 5902 / 6081).
+  \item[\code{scripts/dev.sh}] \texttt{[--distro humble|jazzy] up | shell | build | test | vnc |
+    down | clean | import} (default distribution from \code{DHARMA_DISTRO}, else Humble).
+  \item[\code{scripts/setup.sh}] \texttt{check} or \texttt{install <components>} on a robot
+    computer or a development machine: \code{ros}, \code{tools}, \code{repos}, \code{livox},
+    \code{rosdep}, \code{build} and \code{service} (a systemd unit running the bringup at boot).
+  \item[\code{scripts/start_tmux.sh}] a tmux session with one window per subsystem from a YAML
+    layout in \code{scripts/tmux/} (\code{robot} or \code{sim}).
+  \item[\code{scripts/sync_tooling.sh}, \code{tooling/}] the canonical tooling files and their
+    copy into every checkout (maintainers).
+  \item[\code{src/robot_bringup}] the placeholder product package: \code{config/robot.yaml} (the
+    robot profile), \code{config/stack.yaml} (per-node overrides), \code{config/sim.yaml} (on
+    top of it for the simulator), \code{launch/robot.launch.py} (an optional robot driver and the
+    stack) and \code{launch/sim.launch.py} (\pkg{dharma_sim} and the stack, odometry external),
+    with the composition in \code{robot_bringup/stack.py} and pure helpers in
+    \code{bringup.py}, all unit-tested.
+  \item[\code{.github/}, \code{CONTRIBUTING.md}, \code{docs/}] CI, the pull request template,
+    the conventions and this documentation.
+\end{description}
+
+\textbf{Bringup.} \texttt{ros2 launch robot\_bringup robot.launch.py} validates every argument
+and the robot profile (unknown names and out-of-range values stop the launch with the reason),
+merges \code{stack.yaml} (and \code{sim.yaml}) with \code{params_file} into one parameter file,
+adds every started node to the health monitor's \param{nodes.expected}, reports sections that
+match no node, and includes each package launch in its own scope with \code{robot_params}, the
+merged file and only the arguments that are set. It remaps the mux's \topic{cmd_vel} to
+\topic{/<robot_ns>/cmd_vel}. Arguments: \code{robot_params}, \code{params_file},
+\code{use_sim_time}, \code{log_level}, \code{robot_ns} (\code{ROBOT_NS}), \code{robot_driver}
+(\code{<package>[/<file>.launch.py]}, started with \code{namespace:=<robot_ns>}),
+\code{odometry} (\code{fast_lio}, \code{leg_kilo} or \code{external}), \code{site},
+\code{sites_dir}, \code{start_mapping}, \code{fiducials}, \code{camera_image},
+\code{camera_info}, \code{health}, and for the simulator \code{world}, \code{scenario},
+\code{rviz}. A robot driver package provides \code{launch/bringup.launch.py} accepting
+\code{namespace}; it publishes \topic{/<ns>/odom}, \topic{/<ns>/battery}, the LiDAR and IMU and
+the URDF TF, and subscribes \topic{/<ns>/cmd_vel}.
+
+\textbf{A new product.} ``Use this template'' on GitHub, clone, then
+\begin{lstlisting}
+scripts/init_project.py --name MyRobot --package my_robot_bringup --robot-ns my_robot --dry-run
+scripts/init_project.py --name MyRobot --package my_robot_bringup --robot-ns my_robot
+\end{lstlisting}
+renames \code{robot_bringup} everywhere, sets the robot namespace and the container names, removes
+what only the hub needs (\code{tooling/}, the tooling sync, the script itself, the manual, the
+paper, the diagram sources and the wiki unless \code{--keep-docs}), resets the version to 0.1.0
+and rewrites \code{README.md} and \code{CHANGELOG.md}. The wiki page \emph{New product from the
+template} walks through the remaining steps (robot profile, driver, limits, first map).
 
 \section{Building this documentation}
 
