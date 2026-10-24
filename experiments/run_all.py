@@ -1,5 +1,5 @@
 """
-Run E1-E4 for every seed and write results/*.csv, then the paper's tables and figures.
+Run E1-E5 for every seed and write results/*.csv, then the paper's tables and figures.
 
     python3 experiments/run_all.py              # 20 seeds, every experiment (2 processes)
     python3 experiments/run_all.py --seeds 2 e1 # quick look at one experiment
@@ -20,10 +20,11 @@ import e1_stopping
 import e2_blind
 import e3_localization
 import e4_path_shift
+import e5_backup
 
 EXPERIMENTS = {
-    'e1': ('e1_stopping', e1_stopping.run, lambda s: [(v, x) for v in e1_stopping.SPEEDS
-                                                      for x in s]),
+    'e1': ('e1_stopping', e1_stopping.run, lambda s: [
+        (v, x, h) for h in e1_stopping.HUMAN_SPEEDS for v in e1_stopping.SPEEDS for x in s]),
     'e2': ('e2_blind', e2_blind.run, lambda s: [
         (k, m, v, x) for k in e2_blind.KINDS for m in e2_blind.MODES
         for v in e2_blind.VERSIONS for x in s]),
@@ -31,6 +32,8 @@ EXPERIMENTS = {
     'e4': ('e4_path_shift', e4_path_shift.run, lambda s: [
         (m, x, layout) for layout in e4_path_shift.LAYOUTS for m in e4_path_shift.MODES
         for x in s]),
+    'e5': ('e5_backup', e5_backup.run, lambda s: [(c, x) for c in e5_backup.CONDITIONS
+                                                  for x in s]),
 }  # fmt: skip
 
 
