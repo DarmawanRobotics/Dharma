@@ -55,7 +55,7 @@ class FollowerDriver:
         self.follower.on_localization(True)
         avoidance = AvoidanceConfig()
         self.policy = POLICIES.create(
-            avoidance.policy, avoidance.shared, avoidance.policy_config()
+            avoidance.policy, avoidance.shared, avoidance.policy_config(), robot=robot
         )
         self.start_sec = start_sec
         self.pose = pose or (lambda r, now: r.pose)

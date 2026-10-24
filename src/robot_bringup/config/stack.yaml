@@ -2,6 +2,8 @@
 # Merged with params_file:= (later wins) and passed to every package launch. Each package's
 # README lists its parameters; `ros2 param describe /<node> <name>` shows units and ranges.
 # A section that matches no started node is reported at launch (typo).
+# Backing up after a stop point (path_follower_node inspection.reverse_distance_m > 0) needs
+# the avoidance to see behind: lidar_sector_node front.fov_deg: 360.0.
 
 control_mux_node:
   ros__parameters:
