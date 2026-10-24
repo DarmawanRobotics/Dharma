@@ -112,6 +112,8 @@ def value(v) -> str:
     if isinstance(v, (list, tuple)):
         return '[' + ', '.join(value(x) for x in v) + ']'
     if isinstance(v, str):
+        if ' ' in v:
+            return r'\texttt{' + tex(v) + '}'
         return r'\code{' + v + '}' if v else r'\code{""}'
     return tex(v)
 
@@ -121,15 +123,17 @@ def span(spec) -> str:
     if spec.choices:
         return ', '.join(tex(c) for c in spec.choices)
     lo = '' if spec.min is None else f'{spec.min:g}'
-    hi = '' if spec.max is None else f'{spec.max:g}'
-    return f'{lo}\\,..\\,{hi}' if lo or hi else ''
+    hi = '' if spec.max is None or spec.max > 1e6 else f'{spec.max:g}'
+    return f'{lo}..{hi}' if lo or hi else ''
 
 
 def param_table(rows) -> str:
     """Return one longtable of parameter entries."""
     head = (
-        '\\begin{small}\n\\begin{longtable}{@{}p{0.28\\textwidth}p{0.12\\textwidth}'
-        'p{0.08\\textwidth}p{0.11\\textwidth}p{0.29\\textwidth}@{}}\n\\toprule\n'
+        '\\begin{small}\n\\begin{longtable}{@{}>{\\raggedright}p{0.27\\textwidth}'
+        '>{\\raggedright}p{0.14\\textwidth}>{\\raggedright}p{0.11\\textwidth}'
+        '>{\\raggedright}p{0.10\\textwidth}>{\\raggedright\\arraybackslash}p{0.26\\textwidth}@{}}'
+        '\n\\toprule\n'
         'Parameter & Default & Unit & Range & Description \\\\\n\\midrule\n\\endhead\n'
         '\\bottomrule\n\\endfoot\n'
     )
@@ -195,7 +199,7 @@ def interface_block(path: Path) -> str:
     if constants:
         out.append('\\multicolumn{3}{@{}l}{\\emph{constants}} \\\\\n')
         for typ, name, val, comment in constants:
-            out.append(f'\\code{{{name} = {val}}} & \\code{{{typ}}} & {tex(comment)} \\\\\n')
+            out.append(f'\\code{{{name}}} = {tex(val)} & \\code{{{typ}}} & {tex(comment)} \\\\\n')
     titles = ['request', 'response'] if kind == 'srv' else ['fields']
     for title, fields in zip(titles, sections, strict=True):
         out.append(f'\\multicolumn{{3}}{{@{{}}l}}{{\\emph{{{title}}}}} \\\\\n')

@@ -141,7 +141,7 @@ clock); everything else is static. This matters for the TF latency budget
 
 Each package has one launch file (\code{launch/<pkg>.launch.py}) with the arguments
 \code{params_file}, \code{robot_params}, \code{use_sim_time} and \code{log_level}; parameters
-are applied as \code{[package defaults, robot_params, params_file, non-empty overrides]}, so an
+are applied as \texttt{[package defaults, robot\_params, params\_file, non-empty overrides]}, so an
 empty argument never overrides a value from a file. No package launch file includes another
 one: the product bringup (generated from the template's \code{robot_bringup}) composes them.
 Nodes that can plausibly crash set \code{respawn=True}; the robot driver must stop on its own

@@ -9,8 +9,8 @@ throttles the camera for the fiducial detector.
 \section{Sector scan semantics}
 
 A \code{SectorScan} holds the nearest obstacle per angular sector; sector $i$ is centred at
-\code{angle_min} $+ (i + \tfrac12)$ \code{angle_increment}. \code{ranges[i] >= range_max} means
-nothing within range; \code{ranges[i] <= BLOCKED} (0) or NaN means blocked or unknown, and
+\code{angle_min} $+ (i + \tfrac12)$ \code{angle_increment}. \texttt{ranges[i] >= range\_max} means
+nothing within range; \texttt{ranges[i] <= BLOCKED} (0) or NaN means blocked or unknown, and
 \emph{every consumer treats it as an obstacle at the robot}. Every sector is \code{BLOCKED}
 when:
 \begin{itemize}

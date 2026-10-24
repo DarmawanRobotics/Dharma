@@ -14,11 +14,11 @@ it. The defaults are for a Livox Mid-360 indoors.
     error-state Kalman filter with state $(\mathbf{R}, \vect{p}, \vect{v}, \vect{b}_\omega,
     \vect{b}_a, \vect{g})$: the IMU propagates, point-to-plane residuals of each LiDAR scan
     correct. The initial gravity $\vect{g}_0$ is the mean acceleration of the first samples and
-    \frm{camera_init} is the IMU frame at that time. It runs with \code{extrinsic_est_en: false}
+    \frm{camera_init} is the IMU frame at that time. It runs with \texttt{extrinsic\_est\_en: false}
     since the Mid-360 IMU is built in and factory calibrated (review finding \#8).
   \item[\code{method:=leg_kilo}] Leg-KILO~\cite{ou2024legkilo} through the DarmawanRobotics fork
     (headless viewer, the same \frm{odom}/\frm{body} frames as FAST-LIO, the
-    \topic{/cloud_registered_body} output). It runs in LIO mode with \code{init_type: 2}
+    \topic{/cloud_registered_body} output). It runs in LIO mode with \texttt{init\_type: 2}
     (gravity alignment: the start rotation aligns the mean acceleration with gravity). Its KILO
     mode needs per-foot contact forces that most drivers do not publish.
   \item[\code{method:=external}] another publisher of \topic{/Odometry} (the simulator); only the

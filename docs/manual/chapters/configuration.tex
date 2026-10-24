@@ -73,14 +73,14 @@ smallest deceleration and the largest reaction time observed, then add margin.
 \section{Typed parameters}
 
 Each node declares its configuration as frozen dataclasses with
-\code{dharma_utils.config.param(default, doc=, unit=, min=, max=, choices=, live=)} fields
+\code{dharma_utils.config.param} fields (default, \code{doc}, \code{unit}, \code{min}, \code{max}, \code{choices}, \code{live})
 and \code{nested(...)} sections (dotted names such as \code{speed.cruise}). \code{DharmaNode}:
 \begin{itemize}
   \item declares every field as a ROS parameter with a descriptor (description, unit, range,
-    read-only for \code{live=False}): \code{ros2 param describe <node> <name>} shows it;
+    read-only for \code{live=False}): \texttt{ros2 param describe <node> <name>} shows it;
   \item validates all values at start (ranges, choices, types and the cross-field
     \code{validate()} of the dataclass) and refuses to start on a safety value that fails;
-  \item validates every \code{ros2 param set} the same way and rejects an invalid value with
+  \item validates every \texttt{ros2 param set} the same way and rejects an invalid value with
     the reason, keeping the old one;
   \item reports parameters in the YAML files that no dataclass declares (typos).
 \end{itemize}
