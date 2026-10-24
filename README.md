@@ -77,6 +77,7 @@ One repository per part, all at version 0.2.0, listed in [dharma.repos](dharma.r
 ```bash
 git clone https://github.com/<owner>/<MyRobot>.git && cd <MyRobot>
 scripts/init_project.py --name MyRobot --package my_robot_bringup --robot-ns my_robot
+pre-commit run --all-files          # re-pads the tables the rename made longer
 git add -A && git commit -m "chore: init from the Dharma template"
 ```
 
