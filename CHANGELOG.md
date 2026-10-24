@@ -28,6 +28,11 @@ versions follow [SemVer](https://semver.org).
   mux state (armed handshake) and the measured twist, avoidance looks around the direction of
   travel; results, tables, figure and the paper's evaluation, abstract and conclusion updated;
   the README's findings table became "Findings and fixes" with before / after numbers.
+- Experiments rerun on dharma_navigation #13 (swept-footprint guard, `pass_margin`, rejoin
+  planner, corner-aware corridor, reactive defaults): the rig's follower gets the sector centres
+  (`ScanInput.centres`) as `path_follower_node` builds it; E1, E3, E4, E5 rerun (E1 and E2
+  reproduce their CSVs; E3 changed with the follower's laps); results, tables, figure, README
+  findings and open items, and the paper's evaluation, abstract and conclusion updated.
 - Docs: Foxy | Humble | Jazzy in the README, wiki, manual, paper and CI diagram.
 
 ### Fixed
