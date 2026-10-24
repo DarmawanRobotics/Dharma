@@ -28,6 +28,7 @@ import numpy as np
 
 from dharma_navigation.core.follower.state import FollowerState
 from dharma_utils.io import RoutePoint
+from dharma_utils.math import default_rng
 
 MODES = ('path_shift', 'reactive', 'off')
 LAYOUTS = ('on_route', 'beside_route')
@@ -61,7 +62,7 @@ def route() -> list[RoutePoint]:
 
 def crowd(seed: int, layout: str = 'on_route') -> Crowd:
     """Return the people of a seed: on_route, or beside_route (no one standing on it)."""
-    rng = np.random.default_rng([seed, 4])
+    rng = default_rng([seed, 4])
     u = rng.uniform
     standing, beside = (u(5.0, 6.5), u(-0.3, 0.3)), (u(10.0, 11.5), u(-0.7, 0.7))
     if layout == 'beside_route':
@@ -80,7 +81,7 @@ def crowd(seed: int, layout: str = 'on_route') -> Crowd:
 def count_stops(t: np.ndarray, x: np.ndarray, speed: np.ndarray, until: float) -> int:
     """Return how often the speed fell below 0.05 m/s after exceeding 0.15 m/s (x < until)."""
     stops, moving = 0, False
-    for ti, xi, v in zip(t, x, speed, strict=True):
+    for ti, xi, v in zip(t, x, speed):  # columns of one trace
         if xi >= until or ti < START_SEC:
             continue
         if v > 0.15:

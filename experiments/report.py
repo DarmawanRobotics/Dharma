@@ -53,7 +53,10 @@ def e1(macros: dict) -> str:
         clear = values(rows, 'min_clearance_m', speed=v)
         lines.append(f'{float(v):.1f} & {model:.2f} & {pm(travel, 3)} & {stat(clear, "min", 3)}')
     macros['EOneRuns'] = str(len(rows))
-    for letter, v in zip('ABCD', sorted({r['speed'] for r in rows}, key=float), strict=True):
+    ordered = sorted({r['speed'] for r in rows}, key=float)
+    if len(ordered) != len('ABCD'):
+        raise ValueError(f'e1_stopping: expected 4 speeds, found {len(ordered)}')
+    for letter, v in zip('ABCD', ordered):
         macros[f'EOneMeasured{letter}'] = stat(values(rows, 'travel_m', speed=v), 'mean', 2)
         macros[f'EOneModel{letter}'] = f'{values(rows, "model_m", speed=v)[0]:.2f}'
     speeds = {r['speed'] for r in rows}

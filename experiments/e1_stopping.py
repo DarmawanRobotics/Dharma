@@ -22,6 +22,7 @@ from common.worlds import SEEDS, robot, world
 import numpy as np
 
 from dharma_control.core.config import FieldConfig
+from dharma_utils.math import default_rng
 from dharma_utils.safety import stopping_distance
 
 SPEEDS = (0.2, 0.4, 0.6, 0.8)
@@ -83,7 +84,7 @@ def run(speed: float, seed: int) -> StopRow:
     profile = robot()
     margin = FieldConfig().margin
     model = stopping_distance(speed, profile.limits.max_decel, profile.limits.reaction_time)
-    rng = np.random.default_rng([seed, 1])
+    rng = default_rng([seed, 1])
     person = Appearing(speed, model + margin, float(rng.uniform(0.0, 0.1)))
     rig = Rig(world('hall'), profile, seed)
     rig.people = person
