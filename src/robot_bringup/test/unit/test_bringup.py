@@ -135,3 +135,13 @@ def test_write_params_round_trip(tmp_path):
 def test_shipped_override_files_are_valid():
     for name in ('stack.yaml', 'sim.yaml'):
         assert bringup.load_params(str(CONFIG / name))
+
+
+def test_route_loader_gets_the_sites_dir():
+    data = {'path_loader_node': {'ros__parameters': {'route': 'loop.csv'}}}
+    out = bringup.with_sites_dir(data, 'path_loader_node', '/sites')
+    assert out['path_loader_node']['ros__parameters'] == {
+        'route': 'loop.csv',
+        'sites_dir': '/sites',
+    }
+    assert bringup.with_sites_dir(data, 'path_loader_node', '') is data

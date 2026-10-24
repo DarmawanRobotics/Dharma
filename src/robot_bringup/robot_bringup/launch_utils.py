@@ -87,6 +87,7 @@ def resolve(arg, sim: bool = False):
     if options.start_mapping and not options.site:
         raise bringup.BringupError('start_mapping:=true needs site:=<name>')
     data = bringup.merge_files(files)
+    data = bringup.with_sites_dir(data, stack.ROUTE_NODE, options.sites_dir)
     unknown = bringup.unknown_sections(data, stack.known_sections())
     if options.health:
         names = stack.node_names(options, sim=sim)

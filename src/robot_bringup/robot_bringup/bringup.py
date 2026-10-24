@@ -158,6 +158,13 @@ def with_expected_nodes(data: dict, node: str, expected: list[str]) -> dict:
     return merge(data, {node: {'ros__parameters': {'nodes': {'expected': names}}}})
 
 
+def with_sites_dir(data: dict, node: str, sites_dir: str) -> dict:
+    """Give the route loader the sites directory of the launch (nothing when empty)."""
+    if not sites_dir:
+        return data
+    return merge(data, {node: {'ros__parameters': {'sites_dir': sites_dir}}})
+
+
 def write_params(data: dict, directory: str | None = None) -> str:
     """Write a merged parameter file for this launch; return its path."""
     fd, path = tempfile.mkstemp(prefix='robot_bringup_', suffix='.yaml', dir=directory)
