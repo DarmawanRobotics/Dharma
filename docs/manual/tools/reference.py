@@ -26,6 +26,8 @@ ROOTS = [
     'dharma_mapping',
     'dharma_navigation/dharma_navigation',
     'dharma_navigation/dharma_control',
+    'dharma_health',
+    'dharma_sim',
 ]
 
 # table name -> list of (node, module, class, prefix)
@@ -77,6 +79,12 @@ TABLES = {
         ('control_mux_node', 'dharma_control.core.config', 'MuxConfig', ''),
         ('control_mux_node', 'dharma_control.core.config', 'FieldConfig', 'field.'),
     ],
+    'health': [
+        ('health_monitor_node', 'dharma_health.core.config', 'HealthConfig', ''),
+    ],
+    'sim': [
+        ('sim_robot_node', 'dharma_sim.core.config', 'SimConfig', ''),
+    ],
 }
 
 SPECIAL = {
@@ -85,7 +93,7 @@ SPECIAL = {
     '%': r'\%',
     '$': r'\$',
     '#': r'\#',
-    '_': r'\_',
+    '_': r'\_\allowbreak{}',
     '{': r'\{',
     '}': r'\}',
     '~': r'\textasciitilde{}',
@@ -100,7 +108,8 @@ def tex(text: str) -> str:
 
 def unit(text: str) -> str:
     """Typeset a unit such as m/s^2."""
-    return re.sub(r'\\textasciicircum\{\}(\d)', r'$^{\1}$', tex(text))
+    text = re.sub(r'\\textasciicircum\{\}(\d)', r'$^{\1}$', tex(text))
+    return text.replace('/', r'/\allowbreak{}')
 
 
 def value(v) -> str:
@@ -130,9 +139,9 @@ def span(spec) -> str:
 def param_table(rows) -> str:
     """Return one longtable of parameter entries."""
     head = (
-        '\\begin{small}\n\\begin{longtable}{@{}>{\\raggedright}p{0.27\\textwidth}'
-        '>{\\raggedright}p{0.14\\textwidth}>{\\raggedright}p{0.11\\textwidth}'
-        '>{\\raggedright}p{0.10\\textwidth}>{\\raggedright\\arraybackslash}p{0.26\\textwidth}@{}}'
+        '\\begin{small}\n\\begin{longtable}{@{}>{\\raggedright}p{0.25\\textwidth}'
+        '>{\\raggedright}p{0.17\\textwidth}>{\\raggedright}p{0.10\\textwidth}'
+        '>{\\raggedright}p{0.11\\textwidth}>{\\raggedright\\arraybackslash}p{0.25\\textwidth}@{}}'
         '\n\\toprule\n'
         'Parameter & Default & Unit & Range & Description \\\\\n\\midrule\n\\endhead\n'
         '\\bottomrule\n\\endfoot\n'
