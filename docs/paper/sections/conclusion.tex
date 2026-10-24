@@ -6,8 +6,9 @@ assumptions: one robot profile feeds every geometric and dynamic limit, the loca
 estimate carries its uncertainty and gates its corrections, and a single braking model bounds
 every speed from the route profile to the protective field, which treats missing data as an
 obstacle. Pure algorithm cores and enforced conventions keep these models consistent across
-eleven repositories and two ROS~2 distributions. In simulation the field kept its margin and the gated filter cut the localization error
-sixfold; the same runs found a path-shift deadlock and a follower blind to a held robot.
+eleven repositories and two ROS~2 distributions. In simulation the field kept its margin and
+the gated filter cut the localization error sixfold; the same runs found a path-shift deadlock
+and a follower blind to a held robot.
 Future work is a pose graph for mapping and localization, deskewed and ground-segmented
 perception for the near field, and a second robot model that runs the stack with only a new
 robot adapter.
