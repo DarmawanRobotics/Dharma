@@ -30,7 +30,7 @@
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{mode} & \code{uint8} &  \\
-\code{remote_source} & \code{string} & the operator source that drives in MODE\_REMOTE \\
+\code{remote_source} & \code{string} & the operator source that drives in MODE\_\allowbreak{}REMOTE \\
 \code{estop} & \code{bool} & latched e-stop (software or hardware) \\
 \code{estop_reasons} & \code{string[]} & oldest first \\
 \code{armed} & \code{bool} & false after a release until the source sent a neutral command \\
@@ -67,7 +67,7 @@
 \multicolumn{3}{@{}l}{\emph{fields}} \\
 \code{header} & \code{std_msgs/Header} &  \\
 \code{state} & \code{uint8} &  \\
-\code{source} & \code{string} & last correction: tag:<frame>, pose\_estimate, origin, scan\_match \\
+\code{source} & \code{string} & last correction: tag:<frame>, pose\_\allowbreak{}estimate, origin, scan\_\allowbreak{}match \\
 \code{sigma_xy} & \code{float32} & m, 1-sigma position uncertainty (largest axis) \\
 \code{sigma_yaw} & \code{float32} & rad, 1-sigma heading uncertainty \\
 \code{since_correction} & \code{float32} & s since the last accepted correction \\
@@ -103,7 +103,7 @@
 \code{FOLLOWING} = 2 & \code{uint8} &  \\
 \code{APPROACHING} = 3 & \code{uint8} & final x, y, yaw approach to a stop point or the goal \\
 \code{DWELLING} = 4 & \code{uint8} & waiting at a stop point \\
-\code{PAUSED} = 5 & \code{uint8} & see pause\_reasons \\
+\code{PAUSED} = 5 & \code{uint8} & see pause\_\allowbreak{}reasons \\
 \code{BLOCKED} = 6 & \code{uint8} &  \\
 \code{OFF_PATH} = 7 & \code{uint8} &  \\
 \code{GOAL_REACHED} = 8 & \code{uint8} &  \\
@@ -232,7 +232,7 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{fields}} \\
-\code{header} & \code{std_msgs/Header} & frame\_id: map \\
+\code{header} & \code{std_msgs/Header} & frame\_\allowbreak{}id: map \\
 \code{waypoints} & \code{Waypoint[]} &  \\
 \bottomrule
 \end{tabularx}
@@ -361,7 +361,7 @@
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
 \toprule
 \multicolumn{3}{@{}l}{\emph{request}} \\
-\code{site} & \code{string} & 1-48 of a-z, 0-9, \_ and - \\
+\code{site} & \code{string} & 1-48 of a-z, 0-9, \_\allowbreak{} and - \\
 \code{reset} & \code{bool} &  \\
 \multicolumn{3}{@{}l}{\emph{response}} \\
 \code{success} & \code{bool} &  \\

@@ -1,38 +1,79 @@
 \chapter{Health and diagnostics}
 \label{ch:health}
 
-\pkg{dharma_health} watches the stack and the computer and turns problems into a typed
-\topic{health/status} (\code{HealthStatus}: level OK / WARN / ERROR, issues, speed scale) and a
-\topic{diagnostics} array (one status per check). It is being refactored in parallel with this
-edition; this chapter follows its design (task file) and is checked against the finished code in
-phase 2. \todo{verify every check, parameter and default against dharma\_health 0.2.0 and add the
-generated parameter table}
+\pkg{dharma_health} watches the stack and the computer. Its single node,
+\code{health_monitor_node}, runs every check each \param{period_sec} (1~s) and publishes a typed
+\topic{health/status} (\code{HealthStatus}, latched: \code{level} OK / WARN / ERROR, \code{issues}
+with one line per problem, errors first, and \code{speed_scale} in $[0, 1]$) and a
+\topic{diagnostics} array with one \code{DiagnosticStatus} per checked item, named
+\code{health: <item>}, for \code{rqt_robot_monitor}. It reads the shared \param{robot.*} profile
+for the frames of the odometry chain.
 
 \section{Checks}
 
+Every check family is a \code{Check} class in \code{core/checks/} that returns one finding per
+item, OK included, so a diagnostic never disappears when it recovers.
+
 \begin{description}
-  \item[Sensors.] For every configured topic the rate over a window and the \emph{header stamp
-    age}. The rate is $\hat f = (N - 1)/(t_N - t_1)$ over the window; a topic is silent when
-    $t - t_N > \max(1, 3\bar T)$ and slow when $\hat f < 0.8 f_{\min}$. The stamp age matters as
-    much as the rate: a 10~Hz topic with stamps 2~s in the past passed the 0.1 checks. A negative
-    age (a stamp from the future) is reported as a clock offset.
-  \item[TF.] Per-edge ages from \code{TfCache.edge_ages}, classified as a constant offset (clock)
-    or an age that grows with load, e.g.\ ``\code{camera_init->body} 1.8~s old (LiDAR clock?)''
-    instead of ``\code{map->base_link} stale''. An optional chrony offset check (command output
-    parsing, off by default).
-  \item[State.] The typed statuses of odometry (\code{LOST} and \code{DEGRADED}), localization
-    (\code{NONE} is a warning, review \#9) and control (e-stop, field), and the safety scan (stale
-    or all blocked).
-  \item[Nodes.] Missing nodes by fully qualified name with namespaces (review \#13).
-  \item[System.] CPU, memory, disk, load, Jetson GPU and thermal zones from a whitelist of CPU, GPU
-    and junction zones (some Jetson zones report bogus values); an unreadable value is a warning,
-    never OK (review \#17).
+  \item[Sensors] (\code{sensor:<topic>}). Each entry of \param{sensors.topics} is
+    \code{topic:min_hz[:max_age_sec]}. The topics are subscribed \emph{raw}: the header stamp is
+    read from the serialized CDR bytes (both byte orders), so a point cloud is never
+    deserialized. The rate over \param{sensors.window_sec} is
+    $\hat f = (N - 1)/(t_N - t_1)$ (\code{dharma_utils.math.RateMeter}); a topic is silent
+    ($\hat f = 0$) when $t - t_N > \max(1, 3/\hat f)$ and slow when
+    $\hat f < $ \param{rate_tolerance}${}\cdot f_{\min}$ (0.8). The stamp age matters as much as
+    the rate: a 10~Hz topic with stamps 2~s in the past passed the 0.1 checks and is now late.
+    A stamp more than \param{max_future_sec} ahead of the clock is reported as a clock offset. A
+    topic that is not published, or whose type is not installed, warns with the reason.
+  \item[TF] (\code{tf:<parent>-><child>}). The ages of every dynamic edge
+    (\code{TfCache.edge_ages}) are kept over \param{tf.window_sec} and classified
+    (\code{core/checks/tf.py}): a fresh edge is OK; a stamp more than \param{tf.max_future_sec}
+    ahead is a clock offset (\code{cause: clock}); a late edge whose stamp stopped advancing is a
+    stopped publisher (\code{stopped}); late ages that stay within \param{offset_jitter_sec} of
+    each other are a steady source clock offset (\code{clock}), e.g.\
+    ``\texttt{camera\_init->body 1.8 s old, steady (source clock offset?)}''; late ages that vary are
+    late delivery (\code{load}). Edges listed in \param{tf.edges} must exist; an edge that
+    disappears is reported as gone. The robot's \frm{odom}$\to$\frm{base_link} chain gets its own
+    finding.
+  \item[Clock] (\code{clock:ntp}, off by default). With \param{clock.enabled} the node runs
+    \texttt{chronyc tracking} every \param{clock.period_sec} and warns when the reported offset
+    exceeds \param{clock.max_offset_sec} (50~ms), when the clock is not synchronized or when the
+    command fails or times out.
+  \item[State] (\code{state:*}). The typed statuses: odometry \code{LOST} is an error,
+    \code{INITIALIZING} and \code{DEGRADED} warn; localization \code{NONE} and
+    \code{UNCERTAIN} warn (review \#9: 0.1 reported OK while the robot was not localized);
+    control errors on an engaged e-stop (with its reasons) and on a \code{STALE} or \code{BLIND}
+    protective field. A status that never arrived or is older than \param{state.timeout_sec}
+    warns. The 360° safety scan is an error when it is older than \param{scan_timeout_sec} or
+    blind (every sector \code{BLOCKED} or NaN) and a warning when some sectors are blocked; a
+    scan that never arrived warns during \param{startup_grace_sec} and is an error afterwards.
+    An empty topic parameter turns its check off.
+  \item[Nodes] (\code{node:<name>}). Every \param{nodes.expected} entry is a fully qualified
+    name \code{/namespace/name}, compared with the running nodes including their namespaces
+    (review \#13). Missing nodes warn during the start-up grace and are errors afterwards; a node
+    running twice warns.
+  \item[System] (\code{system:*}). Temperature, memory, free disk at \param{disk_path}, load
+    per CPU, CPU busy share and Jetson GPU load, each against its limit (a limit of 0 turns the
+    reading off; CPU and GPU are off by default). Thermal zones are read only when their type
+    matches \param{system.thermal_zones} (CPU, GPU, junction, x86 package): some Jetson zones
+    report bogus values (PMIC-Die at 100°C). Readings outside $-40$..150°C are ignored. A reading
+    that cannot be obtained is a warning, never OK (review \#17).
 \end{description}
 
-\textbf{Actionable output} (finding H1). The 0.1 monitor published JSON in a \code{std_msgs/String}
-that nothing acted on. The report now aggregates the issues into a level and a requested speed
-scale, for example 0.5 when the LiDAR rate is low or TF is late and 0 on an error; the control
-mux multiplies its commands by it when \param{use_health_limit} is set.
+Products add checks without forking: a \code{Check} subclass registered as an entry point in
+the group \code{dharma_health.checks} and named in \param{extra_checks}
+(Section~\ref{sec:plugin-example} shows the mechanism for a controller).
+
+\textbf{Actionable output} (finding H1). The 0.1 monitor published JSON in a
+\code{std_msgs/String} that nothing acted on. The report (\code{core/report.py}) takes the worst
+level of all findings and the lowest speed scale any finding asks for: an error asks for 0, a
+warning for the lowest matching \param{degradation.rules} entry (\code{<pattern>=<scale>},
+fnmatch on the item name) or \param{warn_scale} (1). The defaults halve the speed while the LiDAR
+or the estimator is slow or late, or a TF edge is late:
+\code{sensor:/livox/lidar=0.5}, \code{sensor:/Odometry=0.5}, \code{tf:*=0.5}. The control mux
+multiplies its commands by the scale when \param{use_health_limit} is set; a health status older
+than \param{health_timeout_sec} (3~s) is ignored (scale 1). Health is a diagnostic aid, not a
+safety function: the protective field and the e-stop never depend on it.
 
 \section{TF latency budget}
 \label{sec:tf-budget}
@@ -155,3 +196,9 @@ dominates:
 Reducing the \topic{/tf} load (joint states at most 30~Hz or on a separate topic; heavy Python
 nodes reading \topic{localization/pose} instead of the whole \topic{/tf}) and real-time priority
 with core isolation for the estimator help further.
+
+\section{Parameters}
+
+\readonlynote
+
+\input{generated/params_health}
