@@ -138,6 +138,14 @@ def test_params_file_overrides_the_stack_file(packages, tmp_path):
     assert control['use_health_limit'] is True
 
 
+def test_shared_overrides_are_flagged(packages, tmp_path):
+    extra = tmp_path / 'site.yaml'
+    extra.write_text(yaml.safe_dump({'/**': {'ros__parameters': {'sites_dir': '/data/sites'}}}))
+    actions = load_launch('robot.launch.py').launch_setup(context(params_file=str(extra)))
+    notes = [text(a.msg) for a in actions if isinstance(a, LogInfo)]
+    assert any('sites_dir' in n and 'Foxy' in n for n in notes), notes
+
+
 def test_invalid_arguments_stop_the_launch(packages):
     launch = load_launch('robot.launch.py')
     with pytest.raises(bringup.BringupError, match='start_mapping'):

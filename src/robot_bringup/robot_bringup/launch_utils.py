@@ -112,6 +112,10 @@ def resolve(arg, sim: bool = False):
             f'parameters {robot_params}, {used}'
         ),
         *[LogInfo(msg=f'WARNING no node is called "{n}" (typo?)') for n in unknown],
+        *[
+            LogInfo(msg=f'WARNING "/**" {name}: on Foxy a node section of the defaults wins')
+            for name in bringup.shared_parameters(data)
+        ],
     ]
     return options, notes
 

@@ -127,6 +127,15 @@ def test_unknown_sections():
     assert bringup.unknown_sections(data, ['/planner_node']) == ['/planer_node']
 
 
+def test_shared_parameters_besides_the_robot_profile():
+    data = {
+        '/**': {'ros__parameters': {'robot': {'name': 'r'}, 'sites_dir': '/s', 'a': {'b': 1}}},
+        'planner_node': {'ros__parameters': {'x': 1}},
+    }
+    assert bringup.shared_parameters(data) == ['a.b', 'sites_dir']
+    assert bringup.shared_parameters({'planner_node': {'ros__parameters': {}}}) == []
+
+
 def test_write_params_round_trip(tmp_path):
     data = {'n': {'ros__parameters': {'a': [1.0, 2.0], 's': 'x'}}}
     path = bringup.write_params(data, str(tmp_path))
