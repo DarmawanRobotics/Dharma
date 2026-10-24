@@ -51,6 +51,12 @@ def e1(macros: dict) -> str:
         clear = values(rows, 'min_clearance_m', speed=v)
         lines.append(f'{float(v):.1f} & {model:.2f} & {pm(travel, 3)} & {stat(clear, "min", 3)}')
     macros['EOneRuns'] = str(len(rows))
+    for letter, v in zip('ABCD', sorted({r['speed'] for r in rows}, key=float), strict=True):
+        macros[f'EOneMeasured{letter}'] = stat(values(rows, 'travel_m', speed=v), 'mean', 2)
+        macros[f'EOneModel{letter}'] = f'{values(rows, "model_m", speed=v)[0]:.2f}'
+    speeds = {r['speed'] for r in rows}
+    spread = [summary(values(rows, 'travel_m', speed=v))['std'] for v in speeds]
+    macros['EOneStdMax'] = f'{max(spread):.3f}'
     macros['EOneClearMin'] = stat(values(rows, 'min_clearance_m'), 'min', 3)
     macros['EOneReactMin'] = stat(values(rows, 'reaction_sec'), 'min', 2)
     macros['EOneReactMax'] = stat(values(rows, 'reaction_sec'), 'max', 2)
@@ -76,6 +82,16 @@ def e2(macros: dict) -> str:
             creep = stat(values(rows, 'creep_mps', **remote), 'max', 2)
             lines.append(f'{kind} & {version} & {t0} & {d} & {creep}')
     macros['ETwoRuns'] = str(len(rows))
+    blind = [r for r in rows if r['kind'] in ('empty', 'sparse') and r['version'] == 'v0.2']
+    auto = [r for r in blind if r['mode'] == 'auto']
+    macros['ETwoBlindZeroMax'] = stat([float(r['zero_after_sec']) for r in auto], 'max', 2)
+    macros['ETwoBlindDistanceMax'] = stat([float(r['distance_m']) for r in auto], 'max', 2)
+    silent = [float(r['zero_after_sec']) for r in rows if r['kind'] == 'silent'
+              and r['mode'] == 'auto']  # fmt: skip
+    macros['ETwoSilentZeroMax'] = stat(silent, 'max', 2)
+    creep = [float(r['creep_mps']) for r in rows
+             if r['mode'] == 'remote' and r['version'] == 'v0.2']  # fmt: skip
+    macros['ETwoCreepMax'] = stat(creep, 'max', 2)
     return tabular('@{}llrrr@{}', 'LiDAR & stack & $t_0$ (s) & $d$ (m) & creep (m/s)', lines)
 
 
