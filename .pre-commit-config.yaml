@@ -11,6 +11,7 @@ repos:
         args: [--fix=lf]
       - id: check-yaml
         args: [--allow-multiple-documents]
+        exclude: ^docs/site/mkdocs\.yml$ # !!python tags (mkdocs build --strict checks it)
       - id: check-xml
       - id: check-merge-conflict
       - id: check-added-large-files

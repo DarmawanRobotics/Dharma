@@ -1,0 +1,119 @@
+# The documentation site (https://darmawanrobotics.github.io/Dharma/), built from docs/wiki:
+#   python3 docs/site/prepare.py && mkdocs build --strict -f docs/site/mkdocs.yml
+# or `make -C docs site`. prepare.py writes docs_dir; edit docs/wiki and docs/site/pages.
+site_name: Dharma
+site_description: A robot-agnostic ROS 2 autonomy stack for legged and wheeled service robots
+site_author: I Wayan Agus Darmawan
+site_url: https://darmawanrobotics.github.io/Dharma/
+repo_url: https://github.com/DarmawanRobotics/Dharma
+repo_name: DarmawanRobotics/Dharma
+edit_uri: edit/main/docs/wiki/
+copyright: Dharma is released under the Apache License 2.0.
+
+docs_dir: ../build/site-src
+site_dir: ../build/site
+hooks:
+  - hooks.py
+
+nav:
+  - Home: index.md
+  - Get started:
+      - Getting Started: Getting-Started.md
+      - New Product from Template: New-Product-from-Template.md
+      - Simulation: Simulation.md
+  - Architecture:
+      - Overview: Architecture.md
+      - Robot Profile: Robot-Profile.md
+      - Safety: Safety.md
+  - Subsystems:
+      - Localization: Localization.md
+      - Mapping and Sites: Mapping-and-Sites.md
+      - Navigation: Navigation.md
+      - Health: Health.md
+  - Operations:
+      - Tuning: Tuning.md
+      - Troubleshooting: Troubleshooting.md
+  - Development:
+      - Contributing: Contributing.md
+  - Reference:
+      - Topics and Services: Topics-and-Services.md
+      - FAQ: FAQ.md
+      - Downloads: downloads.md
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+theme:
+  name: material
+  language: en
+  icon:
+    logo: material/robot-outline
+    repo: fontawesome/brands/github
+  favicon: assets/favicon.svg
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - content.action.edit
+    - content.code.copy
+    - navigation.footer
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.suggest
+    - toc.follow
+
+extra_css:
+  - assets/dharma.css
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/DarmawanRobotics/Dharma
+      name: Dharma on GitHub
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      # GitHub's anchors, so the wiki's Page#anchor links resolve on both
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
