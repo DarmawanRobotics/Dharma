@@ -21,9 +21,9 @@ TF cache with per-edge ages, exception-guarded timers, shutdown hooks).
 \textbf{Checks.} A style test in every package enforces the conventions: modules of at most 300
 lines (tests 400), no ROS imports in \texttt{core/}, no shadowed node members. Lint and format
 run through the same pre-commit hooks locally and in CI (ruff, clang-format, prettier,
-shellcheck). The CI workflow, identical in every repository, builds and tests on ROS~2 Humble
-(Python~3.10, numpy~1.21) and Jazzy (Python~3.12, numpy~1.26); Dharma dependencies are
-imported from \texttt{deps.repos} and checked out at the same branch when it exists, so a
+shellcheck). The CI workflow, identical in every repository, builds and tests on ROS~2 Foxy
+(Python~3.8, numpy~1.17), Humble (Python~3.10, numpy~1.21) and Jazzy (Python~3.12, numpy~1.26);
+Dharma dependencies are imported from \texttt{deps.repos} and checked out at the same branch when it exists, so a
 change that spans repositories is tested together before it is merged.
 
 \textbf{Traceability.} Two reviews of the original stack produced findings with priorities
