@@ -36,6 +36,7 @@ release the software e-stop explicitly. The robot driver must stop on its own co
    command zero; optionally the [health](Health) speed scale.
 5. **Protective field** on the 360° `perception/safety_scan`, with one braking model
    `D(v) = v t_r + v² / 2a`:
+
    - **translation:** the free distance of the footprint along the motion, minus a margin,
      bounds the speed;
    - **rotation:** the free turning angle of the footprint bounds the yaw rate (a long body
