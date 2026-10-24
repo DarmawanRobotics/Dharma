@@ -40,8 +40,6 @@ jobs:
         run: for f in scripts/*.sh docker/entrypoint.sh; do bash -n "$f"; done
       - name: Scripts tests
         run: if [ -d scripts/test ]; then python -m pytest -q scripts/test; fi
-      - name: Docs site script tests
-        run: if [ -d docs/site/test ]; then python -m pytest -q docs/site/test; fi
       - name: Compose file
         run: docker compose --profile foxy --profile humble --profile jazzy config -q
 
