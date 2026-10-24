@@ -47,11 +47,13 @@ What the launch does:
 2. Merges `config/stack.yaml` (+ `config/sim.yaml`) and `params_file` into one parameter file
    (later wins, parameter by parameter), adds every started node to the health monitor's
    `nodes.expected` (names already listed there, e.g. the driver's, are kept), and reports
-   sections that match no node (typos).
+   sections that match no node (typos) and `/**` parameters besides `robot.*`: Foxy applies a
+   node's own section after `/**` whatever the file order, so put overrides under the node name.
 3. Includes each package launch (`dharma_odometry`, `dharma_localization`, `dharma_perception`,
    `dharma_mapping`, `dharma_navigation`, `dharma_control`, `dharma_health`) with
    `robot_params`, the merged `params_file` and only the arguments that are set. Each include runs
-   in its own launch scope: no argument of this launch leaks into a package launch.
+   in its own launch scope: no argument of this launch leaks into a package launch (Foxy has no
+   `GroupAction(forwarding=False)`: the scope unsets this launch's arguments instead).
 4. Remaps the control mux's `cmd_vel` to `/<robot_ns>/cmd_vel` (the only publisher); navigation
    reads `/<robot_ns>/battery` and `/<robot_ns>/odom`, the odometry monitor `/<robot_ns>/odom`.
 

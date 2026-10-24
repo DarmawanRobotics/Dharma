@@ -132,6 +132,18 @@ def unknown_sections(data: dict, nodes: list[str]) -> list[str]:
     return [name for name in data if name != WILDCARD and name.lstrip('/') not in known]
 
 
+def shared_parameters(data: dict) -> list[str]:
+    """
+    Return the '/**' parameters of a parameter file other than the robot profile.
+
+    Foxy applies a node's own section after '/**' whatever the file order, so a '/**' value
+    loses there against the same parameter in a package's defaults: put overrides under the
+    node name.
+    """
+    params = flatten(data.get(WILDCARD, {}).get('ros__parameters', {}))
+    return sorted(k for k in params if not k.startswith(ROBOT_PREFIX))
+
+
 def merge(base: dict, extra: dict) -> dict:
     """Return base with extra merged in, recursively; extra wins (lists are replaced)."""
     out = dict(base)
