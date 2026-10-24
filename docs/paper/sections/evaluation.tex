@@ -1,66 +1,63 @@
 \section{Evaluation}
 \label{sec:eval}
 
-\textbf{Simulation protocol.} The simulator moves an omnidirectional or differential body with
-the acceleration limits of the profile, integrates the measured time step and detects
-collisions. Its LiDAR model follows the Mid-360 (vertical field of view from $-7^\circ$ to
-$52^\circ$ at the mount height, minimum and maximum range, noise, dropout windows). Odometry
-drifts as $\T{odom}{base} \leftarrow \T{odom}{base} \exp(\vect{\xi})$ with $\vect{\xi} \sim
-\mathcal{N}(\vect{0}, \boldsymbol{\Sigma}\,\Delta s)$, plus a yaw bias, a scale error and slip;
-LiDAR and odometry stamps lag by a latency $L$ and commands pass through a delay queue. Every
-scenario (world, timed obstacles, dropouts, latencies) is a YAML file with a seed, so each run
-is reproducible in CI. \todo{scenario list, number of seeds and runs per condition}
+\input{tables/results}
 
-\textbf{E1: stopping distance.} An obstacle appears in front of the robot at speeds from 0.2 to
-0.8~m/s; we record the distance from the moment the field sees it to standstill and the
-smallest clearance, against $D(v)$ of \eqref{eq:braking} (Table~\ref{tab:stop}).
+\textbf{Protocol.} E1--E4 close the loop over the pure cores at the node rates: the simulator
+core (acceleration limits, collisions, Mid-360 ray casting, odometry drift
+$\vect{\xi} \sim \mathcal{N}(\vect{0}, \boldsymbol{\Sigma}\,\Delta s)$, 50/20~ms sensor/command
+latency), perception, the follower with VFH and the mux, all with package defaults and ideal
+localization except in E3. Each condition runs seeds 1--20 (mean $\pm$ std);
+\texttt{experiments/} in the hub reruns them and regenerates the tables.
 
-\begin{table}[t]
-  \centering
-  \caption{E1: model and measured stopping distance, smallest clearance (simulation)}
-  \label{tab:stop}
-  \begin{tabular}{@{}rrrr@{}}
-    \toprule
-    $v$ (m/s) & $D(v)$ (m) & measured (m) & clearance (m) \\
-    \midrule
-    0.2 & 0.08 & \tbd & \tbd \\
-    0.4 & 0.23 & \tbd & \tbd \\
-    0.6 & 0.45 & \tbd & \tbd \\
-    0.8 & 0.73 & \tbd & \tbd \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\textbf{E1: stopping distance.} At speed $v$ a person appears on the robot's axis $D(v) + m$
+ahead, the last point from which \eqref{eq:braking} promises a stop with the margin. From the
+first scan showing it, the robot stopped after \EOneMeasuredA, \EOneMeasuredB, \EOneMeasuredC{}
+and \EOneMeasuredD~m (std $\le$ \EOneStdMax~m) at 0.2--0.8~m/s, against $D(v) =$
+\EOneModelA, \EOneModelB, \EOneModelC{} and \EOneModelD~m; in \EOneRuns{} runs the clearance
+never fell below \EOneClearMin~m and braking began \EOneReactMin--\EOneReactMax~s after the
+appearance, inside $\tr$; the body brakes at exactly $a$ here.
 
-\textbf{E2: blind LiDAR.} The LiDAR drops out (no points, then too few points) while the robot
-drives in AUTO and in REMOTE. We measure the time from the dropout to a zero command, the
-distance travelled meanwhile and the REMOTE creep speed, and compare with the v0.1 behaviour,
-which read an all-zero scan as free. \todo{results table E2}
+\textbf{E2: blind LiDAR.} At 0.5~m/s the LiDAR delivers clouds without points or with 50
+points for 4~s: v0.2 commanded zero within \ETwoBlindZeroMax~s and stood within
+\ETwoBlindDistanceMax~m; v0.1, re-implemented as a baseline (an all-zero blind scan that its field skipped
+as free), drove on at full speed. A silent LiDAR stopped both after the 0.5~s timeout
+(at most \ETwoSilentZeroMax~s). In REMOTE v0.2 crept at \ETwoCreepMax~m/s, v0.1 kept
+0.5~m/s.
 
-\textbf{E3: localization.} With seeded odometry drift and tags along a route, we compare the
-absolute trajectory error of hard replacement by every tag (v0.1), the gated EKF, and the EKF
-with scan matching, and report the rate of rejected outliers (Table~\ref{tab:loc}).
+\textbf{E3: localization.} The follower drives three laps (\EThreeDistance~m) of the
+simulator's mall route with its drift scenario (1\,\% scale, $0.1^\circ$/m yaw bias) past
+four tags, detected at 5~Hz with the noise the tag source assumes plus 5\,\% outliers
+(5--25$^\circ$, 0.1--0.4~m); all estimators get the same inputs (Table~\ref{tab:loc}). Hard
+replacement rejected \EThreeHardReplaceInliersRejected\,\% of the good detections, as its
+0.5~m threshold on \frm{map}$\to$\frm{odom} grows with the distance from the odometry origin;
+the gate rejected \EThreeEkfTagsOutliersRejected\,\% of the outliers and
+\EThreeEkfTagsInliersRejected\,\% of the good detections.
 
 \begin{table}[t]
   \centering
-  \caption{E3: localization error under seeded drift (simulation): RMSE of position, largest
-    position error, RMSE of heading}
+  \caption{E3: position RMSE (ATE), largest position error, heading RMSE}
   \label{tab:loc}
-  \begin{tabular}{@{}lrrr@{}}
-    \toprule
-    Method & ATE (m) & max (m) & yaw (°) \\
-    \midrule
-    Hard replace (v0.1) & \tbd & \tbd & \tbd \\
-    EKF, tags & \tbd & \tbd & \tbd \\
-    EKF, tags + scan match & \tbd & \tbd & \tbd \\
-    \bottomrule
-  \end{tabular}
+  \footnotesize
+  \input{tables/e3}
 \end{table}
 
-\textbf{E4: path shift.} A route through a corridor with standing and walking people is driven
-with path shift, reactive avoidance and no avoidance. We report the smallest clearance to
-people, the completion time, the number of stops and the largest offset from the route.
-\todo{results table E4}
+\begin{table}[t]
+  \centering
+  \caption{E4: completed runs, their time and stops; smallest clearance, largest offset}
+  \label{tab:shift}
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
+  \input{tables/e4}
+\end{table}
 
-The $D(v)$ column of Table~\ref{tab:stop} is computed from \eqref{eq:braking} with the default
-profile ($a = 0.6$~m/s$^2$, $\tr = 0.25$~s); all measured columns are filled from the
-simulation runs.
+\textbf{E4: path shift.} The follower drives 20~m along a 3~m corridor past a person standing on
+the route (\emph{on}) or two beside it, one walking ahead and one crossing; nobody gives way
+(Table~\ref{tab:shift}). Path shift passed in 37 of 40 runs; reactive avoidance never passed a
+person on the route, as the guard stops where the VFH emergency cone holds the robot and the
+VFH gap heading ignores the body width. The failures expose defects: path shift deadlocks when it stops
+within its stop margin before reaching its offset; the follower reports \textsc{following}
+while the mux field holds the robot; a walking person once brushed the stopped robot, as the
+field ignores the speed of people~\cite{isots15066}.
+
+\textbf{End to end.} \todo{e2e}
