@@ -7,8 +7,9 @@ Turn the Dharma template into a robot product repository (run once, after "Use t
 
 Renames the robot_bringup placeholder package everywhere, sets the robot namespace and the
 container names, removes what only the Dharma hub needs (tooling/, the tooling sync, this
-script, the manual, the paper and the diagram sources unless --keep-docs), resets the version
-to 0.1.0 and rewrites README.md and CHANGELOG.md. Commit the result.
+script, the manual, the paper, the diagram sources, the wiki and the documentation site unless
+--keep-docs), resets the version to 0.1.0 and rewrites README.md and CHANGELOG.md. Commit the
+result.
 """
 
 from __future__ import annotations
@@ -37,6 +38,8 @@ DOCS_ONLY = (
     'docs/Makefile',
     'docs/authors.tex',
     'docs/macros.tex',
+    'docs/site',
+    '.github/workflows/docs.yml',
 )
 VERSION = '0.1.0'
 
@@ -237,7 +240,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--package', required=True, help='snake_case bringup package')
     parser.add_argument('--robot-ns', help='robot driver namespace (default: the name, snake)')
     parser.add_argument('--owner', default='DarmawanRobotics', help='GitHub owner for links')
-    parser.add_argument('--keep-docs', action='store_true', help='keep manual, paper, diagrams')
+    parser.add_argument('--keep-docs', action='store_true', help='keep the Dharma docs')
     parser.add_argument('--dry-run', action='store_true', help='print the changes only')
     parser.add_argument('--root', default=str(Path(__file__).resolve().parents[1]))
     args = parser.parse_args(argv)
