@@ -8,7 +8,7 @@ safety mux with a protective field, health monitoring and a simulator. This repo
 hub of the stack and the template a robot product starts from.**
 
 [![CI](https://github.com/DarmawanRobotics/Dharma/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DarmawanRobotics/Dharma/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-darmawanrobotics.github.io%2FDharma-4a6a9a?logo=materialformkdocs&logoColor=white)](https://darmawanrobotics.github.io/Dharma/)
+[![Docs](https://img.shields.io/badge/docs-guide%20%C2%B7%20manual%20%C2%B7%20paper-4a6a9a)](docs/README.md)
 [![ROS 2](https://img.shields.io/badge/ROS%202-Foxy%20%7C%20Humble%20%7C%20Jazzy-22314E?logo=ros&logoColor=white)](https://docs.ros.org/)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20%7C%2022.04%20%7C%2024.04-E95420?logo=ubuntu&logoColor=white)](https://ubuntu.com/server)
 ![Python](https://img.shields.io/badge/Python-3.8%20%7C%203.10%20%7C%203.12-3776AB?logo=python&logoColor=white)
@@ -16,7 +16,7 @@ hub of the stack and the template a robot product starts from.**
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
 [Repositories](#repositories) · [Architecture](#architecture) · [Quick start](#quick-start) ·
-[Bringup](#bringup) · [Scripts](#scripts) · [Documentation site](https://darmawanrobotics.github.io/Dharma/)
+[Bringup](#bringup) · [Scripts](#scripts) · [Guide](docs/guide/README.md) · [Manual (PDF)](docs/pdf/dharma_manual.pdf) · [Paper (PDF)](docs/pdf/dharma_paper.pdf)
 
 </div>
 
@@ -132,10 +132,11 @@ Details in the [package README](src/robot_bringup/README.md).
 
 ## Docs
 
-The **[documentation site](https://darmawanrobotics.github.io/Dharma/)**: getting started, architecture, safety, every subsystem,
-operation and development, with the technical manual and the paper as PDFs. Its sources and the
-LaTeX documents are in [docs/](docs/README.md).
-Conventions for code, commits and releases: [CONTRIBUTING.md](CONTRIBUTING.md); changes:
-[CHANGELOG.md](CHANGELOG.md).
+- **[Guide](docs/guide/README.md)**: getting started, architecture, safety, every subsystem,
+  operation and development (Markdown, renders on GitHub).
+- **[Technical manual (PDF)](docs/pdf/dharma_manual.pdf)** and **[paper (PDF)](docs/pdf/dharma_paper.pdf)**;
+  their LaTeX sources and the diagrams are in [docs/](docs/README.md) (`make -C docs pdf`).
+  Conventions for code, commits and releases: [CONTRIBUTING.md](CONTRIBUTING.md); changes:
+  [CHANGELOG.md](CHANGELOG.md).
 
 Dharma is released under the [Apache License 2.0](LICENSE).

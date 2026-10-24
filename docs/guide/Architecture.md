@@ -1,6 +1,6 @@
 # Architecture
 
-![Layers](images/layers.svg)
+![Layers](../diagrams/svg/layers.svg)
 
 Dharma is layered like a service robot's software usually is, with one difference: **safety is
 not a layer on top but a column on the side**. Navigation never commands the robot; it proposes
@@ -19,28 +19,28 @@ what reaches the driver.
 
 ## Data flow
 
-![Data flow](images/dataflow.svg)
+![Data flow](../diagrams/svg/dataflow.svg)
 
-The main topics are listed in [Topics and Services](Topics-and-Services). Names are relative;
+The main topics are listed in [Topics and Services](Topics-and-Services.md). Names are relative;
 the product namespaces the driver (`/<ns>/cmd_vel`, `/<ns>/odom`, `/<ns>/battery`).
 
 ## Frames
 
-![TF tree](images/tf_tree.svg)
+![TF tree](../diagrams/svg/tf_tree.svg)
 
 `map -> odom -> camera_init -> body -> base_link`. The estimator (FAST-LIO) publishes
 `camera_init -> body` (its IMU at the start and now); localization bridges it into the robot's
 tree with two static transforms and keeps `map -> odom`. `odom` is **gravity-aligned**: the
 bridge levels it with the IMU while the robot stands still at the start, so a robot that started
 on a slope does not tilt its map. Frame names come from `robot.frames`; nothing is hard-coded.
-Details: [Localization](Localization).
+Details: [Localization](Localization.md).
 
 ## One robot profile
 
 Every node reads the same `robot.*` parameters: kinematics, footprint, base height, limits and
 frames. The planner's radii, the protective field, the braking model, the self filter of
 perception and the jump limits of odometry and mapping all derive from it. See
-[Robot Profile](Robot-Profile).
+[Robot Profile](Robot-Profile.md).
 
 ## Inside a package
 
@@ -62,10 +62,10 @@ perception and the jump limits of odometry and mapping all derive from it. See
 
 ## Repositories
 
-![Repositories](images/repos.svg)
+![Repositories](../diagrams/svg/repos.svg)
 
 `dharma_utils` and `dharma_interfaces` are at the bottom; every package depends on them and on
 nothing above its layer. Each repository has the same CI (lint, then build and test on Foxy,
 Humble and Jazzy, with the Dharma dependencies on the same branch when it exists):
 
-![CI](images/ci.svg)
+![CI](../diagrams/svg/ci.svg)

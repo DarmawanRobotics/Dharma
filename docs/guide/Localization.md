@@ -4,7 +4,7 @@
 bridge from the LiDAR-inertial odometry into the robot's TF tree, and a fiducial-anchored
 SE(2) EKF over `map -> odom`.
 
-![TF tree](images/tf_tree.svg)
+![TF tree](../diagrams/svg/tf_tree.svg)
 
 ## The bridge
 
@@ -17,7 +17,7 @@ again.
 
 ## The estimator
 
-![Localization EKF](images/localization_ekf.svg)
+![Localization EKF](../diagrams/svg/localization_ekf.svg)
 
 - **State:** `map -> odom` (x, y, yaw) with a 3×3 covariance.
 - **Predict:** noise per metre travelled and per radian turned by the odometry
@@ -50,7 +50,7 @@ ros2 service call /localization/record_tags std_srvs/srv/Trigger    # add the vi
 
 `record_tags` averages the visible tags' map poses over `tag.record_duration_sec`, refuses noisy
 recordings and never records the tag the current `map -> odom` came from. The site manager loads
-the active site's tags file for you ([Mapping and Sites](Mapping-and-Sites)).
+the active site's tags file for you ([Mapping and Sites](Mapping-and-Sites.md)).
 
 ## Scan matching
 

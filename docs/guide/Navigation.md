@@ -1,7 +1,7 @@
 # Navigation
 
 `dharma_navigation` takes the robot to a pose or along a taught route. It never commands the
-robot directly: the follower publishes `control/nav_cmd_vel` and the [control mux](Safety)
+robot directly: the follower publishes `control/nav_cmd_vel` and the [control mux](Safety.md)
 decides what reaches `cmd_vel`.
 
 | Node                      | Role                                                                                      |
@@ -18,7 +18,7 @@ ros2 service call /planner/go_to dharma_interfaces/srv/GoTo "{x: 8.0, y: 4.0, ya
 ros2 service call /planner/cancel std_srvs/srv/Trigger
 ```
 
-The planner builds a costmap from `/map` with radii from the [footprint](Robot-Profile): cells
+The planner builds a costmap from `/map` with radii from the [footprint](Robot-Profile.md): cells
 closer than the inscribed radius + `costmap.margin` are lethal; up to the circumscribed radius
 the **oriented footprint** is checked at the heading the robot will have, so a door narrower than
 the body is refused. A\* with line-of-sight shortcuts that never cut corners or diagonal pinches;
@@ -44,7 +44,7 @@ ros2 service call /navigation/start std_srvs/srv/Trigger
   `DEPARTED` (`navigation/stop_point`).
 - **Loop routes** (`loop_route`) start the next lap unless the battery is low.
 
-![Follower states](images/follower_fsm.svg)
+![Follower states](../diagrams/svg/follower_fsm.svg)
 
 | State          | Meaning                                            |
 | -------------- | -------------------------------------------------- |

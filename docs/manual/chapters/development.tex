@@ -342,9 +342,9 @@ scripts/init_project.py --name MyRobot --package my_robot_bringup --robot-ns my_
 \end{lstlisting}
 renames \code{robot_bringup} everywhere, sets the robot namespace and the container names, removes
 what only the hub needs (\code{tooling/}, the tooling sync, the script itself, the manual, the
-paper, the diagram sources and the wiki unless \code{--keep-docs}), resets the version to 0.1.0
-and rewrites \code{README.md} and \code{CHANGELOG.md}. The wiki page \emph{New product from the
-template} walks through the remaining steps (robot profile, driver, limits, first map).
+paper, the diagram sources, the PDFs and the guide unless \code{--keep-docs}), resets the version
+to 0.1.0 and rewrites \code{README.md} and \code{CHANGELOG.md}. The guide page \emph{New product
+from the template} (\code{docs/guide}) walks through the remaining steps (robot profile, driver, limits, first map).
 
 \section{Building this documentation}
 
@@ -353,6 +353,7 @@ make -C docs              # diagrams (when draw.io is installed), manual, paper
 make -C docs diagrams     # diagrams/*.drawio -> diagrams/pdf (cropped), diagrams/svg
 make -C docs manual       # build/manual/dharma_manual.pdf
 make -C docs paper        # build/paper/dharma.pdf
+make -C docs pdf          # both, copied to docs/pdf (committed)
 make -C docs reference SRC=~/ws/src   # regenerate manual/generated from the sources
 \end{lstlisting}
 Diagrams are draw.io files (Helvetica; colours per layer: estimation orange \texttt{\#ffe6cc} /

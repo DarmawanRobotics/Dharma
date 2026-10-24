@@ -1,28 +1,28 @@
-# Dharma
+# Dharma guide
 
 Dharma is a robot-agnostic ROS 2 autonomy stack (Foxy, Humble and Jazzy) for legged and
 wheeled service robots in public spaces: LiDAR-inertial odometry, fiducial localization, occupancy
 mapping with sites, path planning and following, a safety mux with a protective field, health
 monitoring, RViz panels and a simulator. Nothing in it is specific to one robot: geometry,
-limits and frames come from one [robot profile](Robot-Profile). A product (a tour guide, an
-inspection robot) is a repository made from the [template](New-Product-from-Template).
+limits and frames come from one [robot profile](Robot-Profile.md). A product (a tour guide, an
+inspection robot) is a repository made from the [template](New-Product-from-Template.md).
 
-![Layered architecture](images/layers.svg)
+![Layered architecture](../diagrams/svg/layers.svg)
 
 ## Start here
 
-| I want to                        | Read                                                                                   |
-| -------------------------------- | -------------------------------------------------------------------------------------- |
-| run the stack on the simulator   | [Getting Started](Getting-Started)                                                     |
-| understand how the parts fit     | [Architecture](Architecture), [Topics and Services](Topics-and-Services)               |
-| bring Dharma up on a new robot   | [New Product from Template](New-Product-from-Template), [Robot Profile](Robot-Profile) |
-| map a site and teach routes      | [Mapping and Sites](Mapping-and-Sites), [Localization](Localization)                   |
-| drive to goals and follow routes | [Navigation](Navigation)                                                               |
-| know what keeps the robot safe   | [Safety](Safety)                                                                       |
-| tune or diagnose a robot         | [Tuning](Tuning), [Health](Health), [Troubleshooting](Troubleshooting)                 |
-| test without hardware            | [Simulation](Simulation)                                                               |
-| change or extend a package       | [Contributing](Contributing)                                                           |
-| quick answers                    | [FAQ](FAQ)                                                                             |
+| I want to                        | Read                                                                                         |
+| -------------------------------- | -------------------------------------------------------------------------------------------- |
+| run the stack on the simulator   | [Getting Started](Getting-Started.md)                                                        |
+| understand how the parts fit     | [Architecture](Architecture.md), [Topics and Services](Topics-and-Services.md)               |
+| bring Dharma up on a new robot   | [New Product from Template](New-Product-from-Template.md), [Robot Profile](Robot-Profile.md) |
+| map a site and teach routes      | [Mapping and Sites](Mapping-and-Sites.md), [Localization](Localization.md)                   |
+| drive to goals and follow routes | [Navigation](Navigation.md)                                                                  |
+| know what keeps the robot safe   | [Safety](Safety.md)                                                                          |
+| tune or diagnose a robot         | [Tuning](Tuning.md), [Health](Health.md), [Troubleshooting](Troubleshooting.md)              |
+| test without hardware            | [Simulation](Simulation.md)                                                                  |
+| change or extend a package       | [Contributing](Contributing.md)                                                              |
+| quick answers                    | [FAQ](FAQ.md)                                                                                |
 
 ## Repositories
 
