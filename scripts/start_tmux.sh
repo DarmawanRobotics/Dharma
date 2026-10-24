@@ -9,11 +9,12 @@
 # replaced from the environment. Each pane runs one package launch with the bringup's robot
 # profile and stack file; for exactly what the robot runs use `ros2 launch robot_bringup
 # robot.launch.py`. Env: ROBOT_NS, ROBOT_DRIVER, ODOMETRY, SITE, SITES_DIR, DETACH=1 (do not
-# attach), ROS_DISTRO (humble).
+# attach), ROS_DISTRO (the one in /opt/ros, else humble).
 set -euo pipefail
 
 WS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export WS ROS_DISTRO="${ROS_DISTRO:-humble}"
+installed=$(find /opt/ros -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2> /dev/null | sort | tail -n1)
+export WS ROS_DISTRO="${ROS_DISTRO:-${installed:-humble}}"
 LAYOUT="${1:-robot}"
 [[ -f "$LAYOUT" ]] || LAYOUT="$WS/scripts/tmux/$LAYOUT.yaml"
 if [[ ! -f "$LAYOUT" ]]; then
