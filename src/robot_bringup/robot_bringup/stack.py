@@ -9,6 +9,7 @@ non-empty arguments are passed, so an unset one never hides a value from a param
 from dataclasses import dataclass, field
 
 HEALTH_NODE = 'health_monitor_node'
+ROUTE_NODE = 'path_loader_node'  # loads taught routes from sites_dir
 
 
 @dataclass(frozen=True)
