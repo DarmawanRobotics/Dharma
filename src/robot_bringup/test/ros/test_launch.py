@@ -73,6 +73,18 @@ def includes(actions) -> list:
     return out
 
 
+def visible_arguments(group: GroupAction, caller: dict) -> set:
+    """Return the caller's launch configurations the include of a group still sees."""
+    ctx = LaunchContext()
+    ctx.launch_configurations.update(caller)
+    for sub in group.get_sub_entities():
+        if isinstance(sub, IncludeLaunchDescription):
+            return set(caller) & set(ctx.launch_configurations)
+        if 'LaunchConfiguration' in type(sub).__name__:  # push, reset, unset (not environment)
+            sub.visit(ctx)
+    raise AssertionError('no include')
+
+
 def text(value) -> str:
     """Return the text of a launch argument name or value."""
     return perform_substitutions(LaunchContext(), normalize_to_list_of_substitutions(value))
@@ -102,10 +114,10 @@ def test_robot_launch_composes_the_stack(packages):
     actions = load_launch('robot.launch.py').launch_setup(context())
     assert includes(actions) == [stack.COMPONENTS[c][0] for c in stack.COMPONENTS]
     assert isinstance(actions[0], LogInfo)
+    caller = {**context().launch_configurations, 'world': 'hall'}
     for group in (a for a in actions if isinstance(a, GroupAction)):
-        entities = group.get_sub_entities()
-        assert type(entities[2]).__name__ == 'ResetEnvironment'  # forwarding=False
-        assert type(entities[3]).__name__ == 'ResetLaunchConfigurations'
+        # Only the explicit arguments reach a package launch (Foxy too: no forwarding=False).
+        assert visible_arguments(group, caller) == set()
 
 
 def test_merged_parameters_name_the_started_nodes(packages):
