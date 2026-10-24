@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Dev container helper (Linux / macOS): one container per ROS distro, see compose.yaml.
 #
-#   scripts/dev.sh [--distro humble|jazzy] <command> [args]
+#   scripts/dev.sh [--distro foxy|humble|jazzy] <command> [args]
 #
 #   up             import the stack if missing, build the image if needed, start the container
 #   shell          interactive shell inside (ROS and the workspace sourced)
@@ -35,9 +35,10 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${ARGS[@]+"${ARGS[@]}"}"
 case "$DISTRO" in
+    foxy) VNC_PORT=5903 NOVNC_PORT=6082 ;;
     humble) VNC_PORT=5901 NOVNC_PORT=6080 ;;
     jazzy) VNC_PORT=5902 NOVNC_PORT=6081 ;;
-    *) echo "unknown distro '$DISTRO': humble or jazzy" >&2; exit 1 ;;
+    *) echo "unknown distro '$DISTRO': foxy, humble or jazzy" >&2; exit 1 ;;
 esac
 SERVICE="dev-$DISTRO"
 compose() { docker compose --profile "$DISTRO" "$@"; }
