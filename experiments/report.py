@@ -95,6 +95,8 @@ def e3(macros: dict) -> str:
             seen = sum(values(rows, kind, **w))
             rejected = sum(values(rows, f'{kind}_rejected', **w))
             macros[f'EThree{key}{kind.capitalize()}Rejected'] = f'{100.0 * rejected / seen:.0f}'
+            accepted = 100.0 * (seen - rejected) / seen
+            macros[f'EThree{key}{kind.capitalize()}Accepted'] = f'{accepted:.0f}'
             macros[f'EThree{key}{kind.capitalize()}'] = f'{seen:.0f}'
         macros[f'EThree{key}WorstMax'] = stat(values(rows, 'max_m', **w), 'max', 2)
     matches = values(rows, 'scan_matches', method='ekf_tags_scan')
@@ -118,14 +120,20 @@ def e4(macros: dict) -> str:
             time = pm(values(rows, 'time_sec', **w), 1) if ok else '--'
             lines.append(
                 f'{name} & {label} & {ok}/{len(done)} & {time} & '
-                f'{pm(values(rows, "stops", **w), 1)} & '
-                f'{stat(values(rows, "min_clearance_m", **w), "min", 2)} & '
+                f'{pm(values(rows, "stops", completed="True", **w), 1) if ok else "--"} & '
+                f'{clearance(values(rows, "min_clearance_m", **w))} & '
                 f'{stat(values(rows, "max_offset_m", **w), "max", 2)}'
             )
     macros['EFourCollisions'] = str(sum(r['collided'] == 'True' for r in rows))
     macros['EFourRuns'] = str(len(rows))
     return tabular('@{}llrrrrr@{}', 'people & avoidance & done & time (s) & stops & '
                    'clear. (m) & offset (m)', lines)  # fmt: skip
+
+
+def clearance(xs) -> str:
+    """Return the smallest clearance (m), 'contact' when a person touched the body."""
+    smallest = min(xs)
+    return 'contact' if smallest <= 0.0 else f'{smallest:.2f}'
 
 
 def write(name: str, text: str):

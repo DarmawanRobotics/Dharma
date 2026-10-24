@@ -161,7 +161,7 @@ def run(seed: int, laps: int = LAPS) -> list[LocRow]:
     scenario = replace(drift, seed=seed)
     rig = Rig(world, profile, seed, scenario, SimConfig(seed=seed))
     points = read_route(str(sim_file('config/routes/mall_loop.csv')))
-    driver = FollowerDriver(rig, points, follower_config(loop_route=True), start_sec=0.5)
+    driver = FollowerDriver(rig, points, follower_config(loop_route=True), start_sec=1.0)
     rng = np.random.default_rng([seed, 3])
     camera = Camera(max_range=DETECTOR_RANGE_M)
     detector = TagDetector(world, profile.base_height, rng, camera)
