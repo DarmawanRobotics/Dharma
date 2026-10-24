@@ -14,6 +14,8 @@ time is from the step command to where that line meets the speed before the step
 the mux, transport, the driver and the odometry).
 """
 
+from __future__ import annotations
+
 import argparse
 import csv
 from dataclasses import dataclass
@@ -119,11 +121,11 @@ def demo(out: Path, speed: float, decel: float, latency: float, noise: float, se
     """Write a run of the dharma_sim body (known decel and command latency) with speed noise."""
     from dharma_sim.core.body import Body, BodyLimits, Twist
     from dharma_sim.core.latency import CommandQueue
-    from dharma_utils.math import Pose2D
+    from dharma_utils.math import Pose2D, default_rng
 
     body = Body(Pose2D(), BodyLimits(accel=1.0, decel=decel, max_dt=0.1))
     queue = CommandQueue(latency, timeout_sec=1.0, zero=Twist())
-    rng = np.random.default_rng(seed)
+    rng = default_rng(seed)
     rows, dt = [], 1.0 / RATE_HZ
     for i in range(int(6.0 * RATE_HZ)):
         now = i * dt

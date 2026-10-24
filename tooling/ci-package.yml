@@ -33,12 +33,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [humble, jazzy]
+        distro: [foxy, humble, jazzy]
     container: ros:${{ matrix.distro }}-ros-base
     env:
       REPO: ${{ github.event.repository.name }}
       BRANCH: ${{ github.head_ref || github.ref_name }}
-      ROS_LOCALHOST_ONLY: "1" # humble
+      ROS_LOCALHOST_ONLY: "1" # foxy, humble
       ROS_AUTOMATIC_DISCOVERY_RANGE: LOCALHOST # jazzy
       PYTHONUNBUFFERED: "1"
     defaults:
@@ -54,6 +54,18 @@ jobs:
           echo "::error title=$1::$msg"
           SH
           chmod +x /usr/local/bin/report
+      - name: Refresh the ROS apt key (frozen end-of-life image)
+        if: matrix.distro == 'foxy'
+        run: |
+          # ros:foxy-ros-base was frozen in 2023 with the ROS apt key that expired in 2025.
+          python3 -c "import urllib.request as u; u.urlretrieve('https://raw.githubusercontent.com/ros/rosdistro/master/ros.key', '/tmp/ros.key')"
+          keyrings=$(grep -rh packages.ros.org /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null \
+            | grep -oP 'signed-by=\K[^ \]]+' | sort -u || true)
+          for keyring in ${keyrings:-/usr/share/keyrings/ros-archive-keyring.gpg}; do
+            gpg --batch --yes --dearmor -o "$keyring" /tmp/ros.key
+            echo "refreshed $keyring"
+          done
+          if [ -z "$keyrings" ]; then apt-key add /tmp/ros.key; fi
       - uses: actions/checkout@v4
         with:
           path: src/${{ env.REPO }}
@@ -76,10 +88,19 @@ jobs:
       - name: ROS dependencies
         run: |
           apt-get update
-          rosdep update --rosdistro "$ROS_DISTRO"
+          rosdep update --rosdistro "$ROS_DISTRO" --include-eol-distros
+          # python3-loguru has no focal package: installed below
           rosdep install --from-paths src --ignore-src -y --rosdistro "$ROS_DISTRO" \
-            --skip-keys "livox_ros_driver2 fast_lio legkilo"
-          apt-get install -y python3-loguru || true
+            --skip-keys "livox_ros_driver2 fast_lio legkilo python3-loguru" > rosdep.log 2>&1 || {
+            cat rosdep.log
+            report "rosdep failed ($ROS_DISTRO)" rosdep.log
+            exit 1
+          }
+          cat rosdep.log
+          # focal (Foxy) has no python3-loguru: install it with pip there
+          if ! apt-get install -y python3-loguru; then
+            apt-get install -y python3-pip && pip3 install loguru
+          fi
       - name: Build
         run: |
           source "/opt/ros/$ROS_DISTRO/setup.bash"

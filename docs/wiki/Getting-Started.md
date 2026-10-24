@@ -12,16 +12,16 @@ lists every stack repository, `external.repos` the Livox driver and FAST-LIO.
 ```bash
 git clone https://github.com/DarmawanRobotics/Dharma.git && cd Dharma
 scripts/dev.sh up        # imports the stack into src/, builds the image, starts the container
-scripts/dev.sh build     # colcon build (Humble; add --distro jazzy for Jazzy)
+scripts/dev.sh build     # colcon build (Humble; --distro foxy or --distro jazzy)
 scripts/dev.sh test      # colcon test + test-result
 scripts/dev.sh shell     # a shell with ROS and the workspace sourced
 scripts/dev.sh vnc       # desktop: vnc://localhost:5901 or http://localhost:6080/vnc.html
 ```
 
-Humble and Jazzy run side by side (`--distro jazzy`: ports 5902 / 6081) with separate build,
-install and log volumes. VS Code: _Reopen in Container_.
+Foxy, Humble and Jazzy run side by side (`--distro foxy`: ports 5903 / 6082, `--distro jazzy`:
+5902 / 6081) with separate build, install and log volumes. VS Code: _Reopen in Container_.
 
-**Natively** (Ubuntu 22.04 + Humble or 24.04 + Jazzy, also on the robot computer):
+**Natively** (Ubuntu 20.04 + Foxy, 22.04 + Humble or 24.04 + Jazzy, also on the robot computer):
 
 ```bash
 scripts/setup.sh check      # what is installed, what is missing

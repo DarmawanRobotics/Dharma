@@ -4,6 +4,8 @@ Pure helpers of the bringup: argument validation and parameter files.
 No launch or ROS imports, so everything here is unit-tested without a robot.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import tempfile
@@ -128,6 +130,18 @@ def unknown_sections(data: dict, nodes: list[str]) -> list[str]:
     """Return the sections of a parameter file that match no started node (typos)."""
     known = {n.lstrip('/') for n in nodes}
     return [name for name in data if name != WILDCARD and name.lstrip('/') not in known]
+
+
+def shared_parameters(data: dict) -> list[str]:
+    """
+    Return the '/**' parameters of a parameter file other than the robot profile.
+
+    Foxy applies a node's own section after '/**' whatever the file order, so a '/**' value
+    loses there against the same parameter in a package's defaults: put overrides under the
+    node name.
+    """
+    params = flatten(data.get(WILDCARD, {}).get('ros__parameters', {}))
+    return sorted(k for k in params if not k.startswith(ROBOT_PREFIX))
 
 
 def merge(base: dict, extra: dict) -> dict:

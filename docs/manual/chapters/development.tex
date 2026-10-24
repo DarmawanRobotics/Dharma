@@ -197,8 +197,16 @@ follower rebuilds it with the robot's limits. An avoidance policy works the same
   \item Type hints on public functions; frozen dataclasses for data and configuration; \code{Enum}
     for states; no mutable default arguments.
   \item Units in names or docstrings (\code{_sec}, \code{_m}, \code{_deg}); radians internally.
-  \item Python 3.10 and numpy 1.21 compatible (Humble): no \code{typing.Self}, \code{tomllib},
-    \code{StrEnum}, \code{datetime.UTC}, PEP~695, same-quote nested f-strings or numpy 2 APIs.
+  \item Python 3.8 and numpy 1.17 compatible (Foxy): \code{from __future__ import annotations}
+    first in every module (ruff's \code{FA} rule with \code{target-version = "py38"}), so hints
+    keep \code{tuple[str, ...]} and \code{float | None}; no 3.9+ runtime features
+    (\code{zip(strict=)}, \code{itertools.pairwise}, \code{functools.cache}, runtime
+    \code{list[int]} or \code{X | Y}, \code{str.removeprefix}, \code{match}) and no numpy 2 APIs;
+    \code{dharma_utils.math.default_rng} instead of \code{np.random.default_rng}.
+  \item Distribution differences only through \code{dharma_utils.ros}: \code{compat} (rclpy
+    init and shutdown, parameter descriptors, executors, the TF buffer) and \code{launch}
+    (\code{node(respawn=, ros_arguments=)}, \code{group(forwarding=)}, \code{node_overrides});
+    a package never branches on the distribution. \code{check_package} reports what is left.
   \item Short functions: ruff's pylint rules (branches, statements, complexity 12) are on; split
     instead of adding \code{noqa}.
 \end{itemize}
@@ -222,8 +230,8 @@ pre-commit run --all-files
   \item[\code{test/ros}] rclpy in-process node tests with \code{DharmaNode}, \code{Spinner} and
     \code{Collector} (\code{dharma_utils.testing}); unique node names; \code{rclpy.init()} and
     \code{try_shutdown()} per test. Module-level helpers must not be named \code{setup} or
-    \code{teardown}: the pytest versions of the Humble and Jazzy apt packages run them as nose-style
-    fixtures before \code{rclpy.init()}.
+    \code{teardown}: the pytest versions of the Foxy, Humble and Jazzy apt packages run them as
+    nose-style fixtures before \code{rclpy.init()}. Foxy's pytest is 4.6.
   \item[\code{test/test_style.py}] \code{check_package}: module sizes, pure \code{core/}, no
     shadowed node members.
 \end{description}
@@ -239,7 +247,7 @@ colcon test-result --verbose
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{ci}
-  \caption{CI of every Dharma repository: lint, then build and test on Humble and Jazzy with the
+  \caption{CI of every Dharma repository: lint, then build and test on Foxy, Humble and Jazzy with the
     Dharma dependencies on the same branch when it exists.}
   \label{fig:ci}
 \end{figure}
@@ -248,8 +256,9 @@ Every repository carries the same \code{.github/workflows/ci.yml} (Fig.~\ref{fig
 \begin{enumerate}
   \item \textbf{lint} on Ubuntu 24.04: \texttt{pre-commit run --all-files}; the end of the log is
     reported as an error annotation on failure.
-  \item \textbf{build-test}, matrix \code{humble} and \code{jazzy} in \code{ros:<distro>-ros-base}
-    (Python 3.10 with numpy 1.21, and Python 3.12 with numpy 1.26):
+  \item \textbf{build-test}, matrix \code{foxy}, \code{humble} and \code{jazzy} in
+    \code{ros:<distro>-ros-base} (Python 3.8 with numpy 1.17, Python 3.10 with numpy 1.21, and
+    Python 3.12 with numpy 1.26); the frozen Foxy image first gets the current ROS apt key:
     \begin{enumerate}
       \item check out the repository into \code{src/<repo>};
       \item \texttt{vcs import} the Dharma dependencies from \code{deps.repos} (at \code{main});
@@ -257,7 +266,7 @@ Every repository carries the same \code{.github/workflows/ci.yml} (Fig.~\ref{fig
         its origin is checked out at that branch, so a change spanning several repositories is
         built and tested together before it is merged;
       \item \texttt{rosdep install} (skipping \code{livox_ros_driver2}, \code{fast_lio},
-        \code{legkilo}, which are built from source on robots);
+        \code{legkilo}, which are built from source on robots; \code{loguru} from pip on Foxy);
       \item \texttt{colcon build}, then \texttt{colcon test} of the repository's packages and
         \texttt{colcon test-result}.
     \end{enumerate}
@@ -285,15 +294,17 @@ from. It holds:
   \item[\code{dharma.repos}, \code{external.repos}] every Dharma repository at \code{main}; the
     Livox driver (\code{livox_ros_driver2}), FAST-LIO and, commented out, the Leg-KILO fork.
   \item[\code{docker/}, \code{compose.yaml}, \code{.devcontainer/}] a development image for
-    Humble and Jazzy (\texttt{ARG ROS\_DISTRO}, \code{ros:<distro>-ros-base}) with an XFCE desktop over
-    VNC and noVNC; one compose service per distribution (profiles \code{humble} and
-    \code{jazzy}), separate build, install and log volumes per distribution (a Humble and a
-    Jazzy build never mix), ports bound to localhost (Humble 5901 / 6080, Jazzy 5902 / 6081).
-  \item[\code{scripts/dev.sh}] \texttt{[--distro humble|jazzy] up | shell | build | test | vnc |
-    down | clean | import} (default distribution from \code{DHARMA_DISTRO}, else Humble).
+    Foxy, Humble and Jazzy (\texttt{ARG ROS\_DISTRO}, \code{ros:<distro>-ros-base}) with an XFCE
+    desktop over VNC and noVNC; one compose service per distribution (profiles \code{foxy},
+    \code{humble} and \code{jazzy}), separate build, install and log volumes per distribution
+    (builds of two distributions never mix), ports bound to localhost (Foxy 5903 / 6082, Humble
+    5901 / 6080, Jazzy 5902 / 6081).
+  \item[\code{scripts/dev.sh}] \texttt{[--distro foxy|humble|jazzy] up | shell | build | test |
+    vnc | down | clean | import} (default distribution from \code{DHARMA_DISTRO}, else Humble).
   \item[\code{scripts/setup.sh}] \texttt{check} or \texttt{install <components>} on a robot
     computer or a development machine: \code{ros}, \code{tools}, \code{repos}, \code{livox},
-    \code{rosdep}, \code{build} and \code{service} (a systemd unit running the bringup at boot).
+    \code{rosdep}, \code{build} and \code{service} (a systemd unit running the bringup at boot);
+    Ubuntu 20.04 with Foxy, 22.04 with Humble or 24.04 with Jazzy.
   \item[\code{scripts/start_tmux.sh}] a tmux session with one window per subsystem from a YAML
     layout in \code{scripts/tmux/} (\code{robot} or \code{sim}).
   \item[\code{scripts/sync_tooling.sh}, \code{tooling/}] the canonical tooling files and their

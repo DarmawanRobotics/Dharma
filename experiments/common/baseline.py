@@ -6,6 +6,8 @@ map->base (flattened to x, y, yaw), unless map->odom itself would change by more
 or 15 deg (v0.1 max_correction_m / max_correction_deg). No uncertainty is kept.
 """
 
+from __future__ import annotations
+
 import math
 
 import numpy as np

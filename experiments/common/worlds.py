@@ -1,5 +1,7 @@
 """Worlds, robot profile and seeds shared by the experiments."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from common.stack import roots

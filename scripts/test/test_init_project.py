@@ -1,15 +1,19 @@
 """scripts/init_project.py: pure helpers and a conversion of a copy of this repository."""
 
+from __future__ import annotations
+
 import importlib.util
 from pathlib import Path
 import py_compile
 import shutil
+import sys
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location('init_project', ROOT / 'scripts' / 'init_project.py')
 init = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = init  # dataclasses resolve string annotations through sys.modules
 SPEC.loader.exec_module(init)
 
 

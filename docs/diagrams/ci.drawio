@@ -34,7 +34,7 @@
         <mxCell id="v10" value="" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontColor=#1a1a1a;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=center;verticalAlign=top;spacing=4;" vertex="1" parent="1">
           <mxGeometry x="430" y="104" width="350" height="220" as="geometry"/>
         </mxCell>
-        <mxCell id="t11" value="&lt;b&gt;build-test&lt;/b&gt;, matrix: &lt;b&gt;humble&lt;/b&gt; | &lt;b&gt;jazzy&lt;/b&gt; in ros:&amp;lt;distro&amp;gt;-ros-base" style="text;html=1;whiteSpace=wrap;fontFamily=Helvetica;fontColor=#1a1a1a;fontSize=11;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;spacing=2;" vertex="1" parent="1">
+        <mxCell id="t11" value="&lt;b&gt;build-test&lt;/b&gt;, matrix: &lt;b&gt;foxy&lt;/b&gt; | &lt;b&gt;humble&lt;/b&gt; | &lt;b&gt;jazzy&lt;/b&gt; in ros:&amp;lt;distro&amp;gt;-ros-base" style="text;html=1;whiteSpace=wrap;fontFamily=Helvetica;fontColor=#1a1a1a;fontSize=11;align=left;verticalAlign=middle;strokeColor=none;fillColor=none;spacing=2;" vertex="1" parent="1">
           <mxGeometry x="436" y="106" width="340" height="20" as="geometry"/>
         </mxCell>
         <mxCell id="v12" value="1. checkout into src/&amp;lt;repo&amp;gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontColor=#1a1a1a;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;verticalAlign=middle;spacing=4;fillColor=#ffffff;" vertex="1" parent="1">

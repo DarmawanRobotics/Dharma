@@ -1,5 +1,7 @@
 """Figures of the paper (matplotlib, PDF, one IEEE column wide)."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import matplotlib
@@ -23,7 +25,7 @@ def e3_error(directory: Path):
     distance = [float(r['odom_distance_m']) for r in rows]
     plt.rcParams.update({'font.size': 7, 'font.family': 'serif', 'axes.linewidth': 0.5})
     fig, ax = plt.subplots(figsize=(3.45, 1.35))
-    for (method, label), color, style in zip(LABELS.items(), COLORS, STYLES, strict=True):
+    for (method, label), color, style in zip(LABELS.items(), COLORS, STYLES):
         error = [float(r[f'{method}_error_m']) for r in rows]
         ax.plot(distance, error, style, color=color, linewidth=1.0, label=label)
     ax.set_xlabel('distance driven (m)')

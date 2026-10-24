@@ -145,4 +145,7 @@ are applied as \texttt{[package defaults, robot\_params, params\_file, non-empty
 empty argument never overrides a value from a file. No package launch file includes another
 one: the product bringup (generated from the template's \code{robot_bringup}) composes them.
 Nodes that can plausibly crash set \code{respawn=True}; the robot driver must stop on its own
-command timeout meanwhile.
+command timeout meanwhile. Foxy's launch cannot respawn: there a crashed node stays down and the
+health monitor reports it. Foxy also applies a node's own section of a parameter file after
+\code{/**} whatever the file order, so overrides go under the node name
+(\code{dharma_utils.ros.launch.node_overrides} for launch arguments).

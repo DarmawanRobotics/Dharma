@@ -10,6 +10,8 @@ config/stack.yaml and params_file (later wins), with the started nodes added to 
 monitor's nodes.expected. The composition itself is in robot_bringup/stack.py.
 """
 
+from __future__ import annotations
+
 from launch import LaunchDescription
 from launch.actions import OpaqueFunction
 

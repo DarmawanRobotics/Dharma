@@ -5,6 +5,38 @@ versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+
+- Foxy support next to Humble and Jazzy: dev container (`dev-foxy`, ports 5903 / 6082 on
+  localhost, `.devcontainer/foxy/`), `scripts/dev.sh --distro foxy`, `scripts/setup.sh` on
+  Ubuntu 20.04 (distribution from `/opt/ros` or the Ubuntu release; loguru from pip there).
+- CI: Foxy in the stack build matrix (frozen image: fresh ROS apt key, end-of-life rosdep
+  data, loguru from pip); scripts and experiments jobs on Python 3.8.
+- Bringup: a launch warning for `/**` parameters besides `robot.*` (Foxy applies a node's own
+  section after `/**`).
+- Experiments: E5, backing up after the inspection at a stop point that faces a wall (360° scan,
+  `inspection.reverse_distance_m` 1 m; no back-up, free, a person behind); E1 also with
+  `field.human_speed` 0 (the braking model alone).
+
+### Changed
+
+- Python 3.8: `from __future__ import annotations` everywhere, ruff `target-version = "py38"`
+  (`tooling/`), no 3.9+ runtime features in the experiments and tools,
+  `dharma_utils.math.default_rng` instead of `np.random.default_rng`.
+- Experiments: avoidance policies get the robot profile (dharma_navigation main).
+- Experiments rerun on dharma_navigation #11 and dharma_perception #12: the follower reads the
+  mux state (armed handshake) and the measured twist, avoidance looks around the direction of
+  travel; results, tables, figure and the paper's evaluation, abstract and conclusion updated;
+  the README's findings table became "Findings and fixes" with before / after numbers.
+- Docs: Foxy | Humble | Jazzy in the README, wiki, manual, paper and CI diagram.
+
+### Fixed
+
+- Bringup: package launches see only their explicit arguments on Foxy too (no
+  `GroupAction(forwarding=False)` there: the scope unsets the bringup's arguments).
+- `test_init_project` registers the module before running it (dataclasses with postponed
+  annotations).
+
 ## [0.2.0] - 2026-10-23
 
 The hub of the stack and the template a robot product is generated from.

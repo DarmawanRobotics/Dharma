@@ -7,6 +7,8 @@ a point at the robot (a BLOCKED or zero range) is skipped, NaN sectors are free,
 than 0.5 s (receive time) stops AUTO, and the field is off in REMOTE (the v0.1 default).
 """
 
+from __future__ import annotations
+
 import math
 
 import numpy as np
@@ -96,7 +98,7 @@ class MuxV01(MuxV02):
         r = np.asarray(scan.safety, dtype=float)
         hit = r < layout.range_max - 1e-3  # NaN compares False: free
         xs, ys = r[hit] * np.cos(theta[hit]), r[hit] * np.sin(theta[hit])
-        self.points = list(zip(xs, ys, strict=True))
+        self.points = list(zip(xs, ys))  # same mask: same length
         self.received = now
 
     def scale(self, vx: float, vy: float) -> float:

@@ -15,12 +15,26 @@
 #   rosdep   the system dependencies of every package under src/
 #   build    colcon build of the workspace
 #   service  a systemd unit running `ros2 launch robot_bringup robot.launch.py` at boot
-# Env: ROS_DISTRO (humble), LIVOX_SDK_REF (master), BUILD_WORKERS / BUILD_JOBS (lower them when
-#      the build runs out of memory), SERVICE_NAME (robot_bringup), FORCE=1 (reinstall anyway)
+# Env: ROS_DISTRO (the one in /opt/ros, else the one of the Ubuntu release: 20.04 foxy,
+#      22.04 humble, 24.04 jazzy), LIVOX_SDK_REF (master), BUILD_WORKERS / BUILD_JOBS (lower them
+#      when the build runs out of memory), SERVICE_NAME (robot_bringup), FORCE=1 (reinstall anyway)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ROS_DISTRO="${ROS_DISTRO:-humble}"
+
+# The ROS 2 distro of this computer: the installed one, else the one of the Ubuntu release.
+default_distro() {
+    local installed codename
+    installed=$(find /opt/ros -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2> /dev/null | sort | tail -n1)
+    [[ -n "$installed" ]] && echo "$installed" && return 0
+    codename=$(. /etc/os-release 2> /dev/null && echo "${VERSION_CODENAME:-}")
+    case "$codename" in
+        focal) echo foxy ;;
+        noble) echo jazzy ;;
+        *) echo humble ;;
+    esac
+}
+ROS_DISTRO="${ROS_DISTRO:-$(default_distro)}"
 LIVOX_SDK_REPO="${LIVOX_SDK_REPO:-https://github.com/Livox-SDK/Livox-SDK2.git}"
 LIVOX_SDK_REF="${LIVOX_SDK_REF:-master}"
 BUILD_WORKERS="${BUILD_WORKERS:-}"
@@ -87,8 +101,12 @@ check_tools() {
 }
 install_tools() {
     apt_install python3-colcon-common-extensions python3-rosdep python3-vcstool python3-pip \
-        python3-loguru python3-scipy python3-yaml git cmake build-essential tmux curl \
-        ca-certificates
+        python3-scipy python3-yaml git cmake build-essential tmux curl ca-certificates
+    # Ubuntu 20.04 (foxy) has no python3-loguru package
+    if ! apt_install python3-loguru; then
+        log "${YELLOW}no python3-loguru package: installing loguru with pip${RESET}"
+        $SUDO pip3 install loguru
+    fi
 }
 
 repo_paths() { # the checkout paths of a .repos file
@@ -129,12 +147,14 @@ install_livox() {
     rm -rf "$tmp"
 }
 
+# python3-loguru has no rosdep rule on Ubuntu 20.04: the tools component installs loguru.
+ROSDEP_SKIP=(--skip-keys python3-loguru)
 check_rosdep() {
     check_ros > /dev/null || { echo "needs ROS"; return 1; }
     [[ -d /etc/ros/rosdep/sources.list.d ]] || { echo "rosdep not initialised"; return 1; }
     source_ros
     local report=/tmp/dharma_rosdep.log
-    rosdep check --from-paths "$ROOT/src" --ignore-src --rosdistro "$ROS_DISTRO" \
+    rosdep check --from-paths "$ROOT/src" --ignore-src --rosdistro "$ROS_DISTRO" "${ROSDEP_SKIP[@]}" \
         > "$report" 2>&1 && echo "all system dependencies installed" && return 0
     echo "missing keys, see $report"
     return 1
@@ -142,8 +162,9 @@ check_rosdep() {
 install_rosdep() {
     [[ -d /etc/ros/rosdep/sources.list.d ]] || $SUDO rosdep init
     source_ros
-    rosdep update --rosdistro "$ROS_DISTRO"
-    rosdep install --from-paths "$ROOT/src" --ignore-src -r -y --rosdistro "$ROS_DISTRO"
+    rosdep update --rosdistro "$ROS_DISTRO" --include-eol-distros # foxy is end of life
+    rosdep install --from-paths "$ROOT/src" --ignore-src -r -y --rosdistro "$ROS_DISTRO" \
+        "${ROSDEP_SKIP[@]}"
 }
 
 check_build() {

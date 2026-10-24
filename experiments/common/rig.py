@@ -7,9 +7,11 @@ drawn from the seed. Every message is delivered when it is published (no transpo
 the sensor and command latencies of the simulator apply.
 """
 
-from collections.abc import Callable
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 import math
+from typing import Callable  # subscripted at runtime below (Python 3.8)
 
 import numpy as np
 
@@ -21,7 +23,7 @@ from dharma_sim.core.config import SimConfig
 from dharma_sim.core.scenario import Scenario
 from dharma_sim.core.simulation import Simulation
 from dharma_sim.core.world import World
-from dharma_utils.math import Pose2D
+from dharma_utils.math import Pose2D, default_rng
 from dharma_utils.robot import RobotProfile
 
 TICK_SEC = 0.01
@@ -77,7 +79,7 @@ class Rig:
         self.sim = Simulation(sim_config or SimConfig(seed=seed), robot, world, scenario)
         self.perception = perception or PerceptionV02(robot)
         self.mux = mux or MuxV02(robot)
-        rng = np.random.default_rng([seed, 7])
+        rng = default_rng([seed, 7])
         self.phase = {
             'lidar': int(rng.integers(LIDAR_EVERY)),
             'driver': int(rng.integers(DRIVER_EVERY)),
@@ -101,7 +103,7 @@ class Rig:
         """Return the true pose."""
         return self.sim.body.pose
 
-    def run(self, until: float, stop: Callable[['Rig'], bool] | None = None):
+    def run(self, until: float, stop: Callable[[Rig], bool] | None = None):
         """Advance until the time (s) or until stop(rig) is True."""
         while self.now < until - 1e-9:
             self.tick += 1

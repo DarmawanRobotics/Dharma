@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 
 import common  # noqa: F401
@@ -5,6 +7,7 @@ import e1_stopping
 import e2_blind
 import e3_localization
 import e4_path_shift
+import e5_backup
 
 
 def test_e1_stops_with_the_margin():
@@ -36,3 +39,11 @@ def test_e4_path_shift_passes_the_people():
     row = e4_path_shift.run('path_shift', 1)
     assert row.completed
     assert row.min_clearance_m > 0.0
+
+
+def test_e5_backup_stops_short_of_a_person_behind():
+    row = e5_backup.run('person', 1)
+    assert row.completed
+    assert 0.0 < row.backed_m < row.person_gap_m
+    assert row.person_clearance_m > 0.3
+    assert not row.collided

@@ -11,8 +11,10 @@ Any legged or wheeled base with velocity control (`omni`: vx, vy, wz; `diff`: vx
 Livox Mid-360 (or any LiDAR as PointCloud2 with another LiDAR-inertial estimator) and an IMU.
 The robot is described by the [robot profile](Robot-Profile); the driver is a product package.
 
-**Humble or Jazzy?**
-Both. Every repository is built and tested on both in CI.
+**Foxy, Humble or Jazzy?**
+All three. Every repository is built and tested on each in CI. Foxy (Ubuntu 20.04, Python 3.8)
+is end of life: use it for robots whose vendor SDK needs it. On Foxy a crashed node is not
+respawned (its launch has no `respawn`); the health monitor reports it.
 
 **Why does the robot stop when the LiDAR is covered?**
 A scan that says nothing is never read as free: perception reports every sector BLOCKED, the mux

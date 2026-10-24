@@ -1,5 +1,7 @@
 """The launch files: arguments, composition into scoped includes, merged parameters."""
 
+from __future__ import annotations
+
 import importlib.util
 import os
 from pathlib import Path
@@ -71,6 +73,18 @@ def includes(actions) -> list:
     return out
 
 
+def visible_arguments(group: GroupAction, caller: dict) -> set:
+    """Return the caller's launch configurations the include of a group still sees."""
+    ctx = LaunchContext()
+    ctx.launch_configurations.update(caller)
+    for sub in group.get_sub_entities():
+        if isinstance(sub, IncludeLaunchDescription):
+            return set(caller) & set(ctx.launch_configurations)
+        if 'LaunchConfiguration' in type(sub).__name__:  # push, reset, unset (not environment)
+            sub.visit(ctx)
+    raise AssertionError('no include')
+
+
 def text(value) -> str:
     """Return the text of a launch argument name or value."""
     return perform_substitutions(LaunchContext(), normalize_to_list_of_substitutions(value))
@@ -100,10 +114,10 @@ def test_robot_launch_composes_the_stack(packages):
     actions = load_launch('robot.launch.py').launch_setup(context())
     assert includes(actions) == [stack.COMPONENTS[c][0] for c in stack.COMPONENTS]
     assert isinstance(actions[0], LogInfo)
+    caller = {**context().launch_configurations, 'world': 'hall'}
     for group in (a for a in actions if isinstance(a, GroupAction)):
-        entities = group.get_sub_entities()
-        assert type(entities[2]).__name__ == 'ResetEnvironment'  # forwarding=False
-        assert type(entities[3]).__name__ == 'ResetLaunchConfigurations'
+        # Only the explicit arguments reach a package launch (Foxy too: no forwarding=False).
+        assert visible_arguments(group, caller) == set()
 
 
 def test_merged_parameters_name_the_started_nodes(packages):
@@ -122,6 +136,14 @@ def test_params_file_overrides_the_stack_file(packages, tmp_path):
     control = merged_parameters(actions)['control_mux_node']['ros__parameters']
     assert control['mode'] == 'remote'
     assert control['use_health_limit'] is True
+
+
+def test_shared_overrides_are_flagged(packages, tmp_path):
+    extra = tmp_path / 'site.yaml'
+    extra.write_text(yaml.safe_dump({'/**': {'ros__parameters': {'sites_dir': '/data/sites'}}}))
+    actions = load_launch('robot.launch.py').launch_setup(context(params_file=str(extra)))
+    notes = [text(a.msg) for a in actions if isinstance(a, LogInfo)]
+    assert any('sites_dir' in n and 'Foxy' in n for n in notes), notes
 
 
 def test_invalid_arguments_stop_the_launch(packages):

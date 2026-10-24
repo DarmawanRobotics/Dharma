@@ -65,7 +65,7 @@ perception and the jump limits of odometry and mapping all derive from it. See
 ![Repositories](images/repos.svg)
 
 `dharma_utils` and `dharma_interfaces` are at the bottom; every package depends on them and on
-nothing above its layer. Each repository has the same CI (lint, then build and test on Humble
-and Jazzy, with the Dharma dependencies on the same branch when it exists):
+nothing above its layer. Each repository has the same CI (lint, then build and test on Foxy,
+Humble and Jazzy, with the Dharma dependencies on the same branch when it exists):
 
 ![CI](images/ci.svg)

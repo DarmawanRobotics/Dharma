@@ -1,7 +1,7 @@
 \begin{abstract}
 Service robots that guide, inspect or deliver in malls, stations and offices drive among people
 on legs or wheels, and the software that moves them is usually written for one robot. We
-present Dharma, an open ROS~2 autonomy stack (Humble and Jazzy) that separates what is generic
+present Dharma, an open ROS~2 autonomy stack (Foxy, Humble and Jazzy) that separates what is generic
 from what is robot-specific: one robot profile (footprint, base height, kinematics, limits,
 frames) is the single source of every geometric and dynamic assumption, typed and validated
 configuration replaces untyped parameters, and algorithm families are plugins. The stack
@@ -12,11 +12,11 @@ Frenet path shift around people, and a protective field that limits translation,
 their combination with a single braking model shared by every speed limit in the stack. Sensing
 is fail-safe by construction: a blind or stale sensor is an obstacle, never free space. We
 describe the models, the software engineering that keeps them consistent (pure cores,
-module-size and purity checks, a Humble and Jazzy CI matrix), and a seeded simulation protocol
+module-size and purity checks, a Foxy, Humble and Jazzy CI matrix), and a seeded simulation protocol
 for stopping distance, blind-sensor behaviour, localization error and avoidance performance.
 In seeded simulations the field kept its margin, a LiDAR without returns zeroed the command
-within 0.13~s, the filter cut the localization error from 0.43 to 0.07~m, and path shift
-passed people in 37 of 40 runs; the runs also exposed defects, which we report.
+within 0.13~s, the filter cut the localization error from 0.44 to 0.08~m, and path shift,
+after fixes of defects the runs exposed, passed people in all 40 runs.
 \end{abstract}
 
 \begin{IEEEkeywords}

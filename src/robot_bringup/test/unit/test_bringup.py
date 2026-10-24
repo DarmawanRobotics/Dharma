@@ -1,5 +1,7 @@
 """Argument validation and parameter files (no ROS)."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -123,6 +125,15 @@ def test_expected_nodes_keep_listed_ones():
 def test_unknown_sections():
     data = {'/**': {}, 'planner_node': {}, '/planer_node': {}}
     assert bringup.unknown_sections(data, ['/planner_node']) == ['/planer_node']
+
+
+def test_shared_parameters_besides_the_robot_profile():
+    data = {
+        '/**': {'ros__parameters': {'robot': {'name': 'r'}, 'sites_dir': '/s', 'a': {'b': 1}}},
+        'planner_node': {'ros__parameters': {'x': 1}},
+    }
+    assert bringup.shared_parameters(data) == ['a.b', 'sites_dir']
+    assert bringup.shared_parameters({'planner_node': {'ros__parameters': {}}}) == []
 
 
 def test_write_params_round_trip(tmp_path):

@@ -1,5 +1,7 @@
 """The stack composition: package launches, arguments, node names (no ROS)."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from robot_bringup import bringup, stack

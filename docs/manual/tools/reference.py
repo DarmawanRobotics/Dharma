@@ -9,6 +9,8 @@ services come from dharma_interfaces/msg and srv. Output: docs/manual/generated/
 Needs Python 3.10+ and numpy (the controller modules import it).
 """
 
+from __future__ import annotations
+
 import argparse
 import importlib
 from pathlib import Path
@@ -210,7 +212,9 @@ def interface_block(path: Path) -> str:
         for typ, name, val, comment in constants:
             out.append(f'\\code{{{name}}} = {tex(val)} & \\code{{{typ}}} & {tex(comment)} \\\\\n')
     titles = ['request', 'response'] if kind == 'srv' else ['fields']
-    for title, fields in zip(titles, sections, strict=True):
+    if len(titles) != len(sections):
+        raise ValueError(f'{path.name}: {len(sections)} sections, expected {len(titles)}')
+    for title, fields in zip(titles, sections):
         out.append(f'\\multicolumn{{3}}{{@{{}}l}}{{\\emph{{{title}}}}} \\\\\n')
         if not fields:
             out.append('\\multicolumn{3}{@{}l}{(empty)} \\\\\n')

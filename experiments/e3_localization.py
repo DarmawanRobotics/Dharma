@@ -10,6 +10,8 @@ world (the map the stack gets in simulation). Errors are
 sampled at 10 Hz against the true pose.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, replace
 import math
 import sys
@@ -35,7 +37,7 @@ from dharma_sim.core.scenario import load_scenario
 from dharma_sim.core.site_fixture import OCCUPIED, rasterize
 from dharma_sim.core.world import World
 from dharma_utils.io import read_route
-from dharma_utils.math import Pose2D, angle_diff
+from dharma_utils.math import Pose2D, angle_diff, default_rng
 
 METHODS = ('hard_replace', 'ekf_tags', 'ekf_tags_scan')
 TAGS = {
@@ -83,7 +85,7 @@ class Estimators:
         self.base_cam = base_cam
         self.ekf = {m: Localizer(MapOdomEstimator(EstimatorConfig()), TagConfig())
                     for m in METHODS[1:]}  # fmt: skip
-        self.tags = TagDetector(world, 0.0, np.random.default_rng(0)).tags
+        self.tags = TagDetector(world, 0.0, default_rng(0)).tags
         for loc in self.ekf.values():
             loc.tags = dict(self.tags)
         self.hard: HardReplace | None = None
@@ -162,11 +164,11 @@ def run(seed: int, laps: int = LAPS) -> list[LocRow]:
     rig = Rig(world, profile, seed, scenario, SimConfig(seed=seed))
     points = read_route(str(sim_file('config/routes/mall_loop.csv')))
     driver = FollowerDriver(rig, points, follower_config(loop_route=True), start_sec=1.0)
-    rng = np.random.default_rng([seed, 3])
+    rng = default_rng([seed, 3])
     camera = Camera(max_range=DETECTOR_RANGE_M)
     detector = TagDetector(world, profile.base_height, rng, camera)
     est = Estimators(world, camera.base_cam())
-    lidar = LidarModel(rig.sim.config.lidar, profile.base_height, np.random.default_rng([seed, 4]))
+    lidar = LidarModel(rig.sim.config.lidar, profile.base_height, default_rng([seed, 4]))
     errors = {m: [] for m in METHODS}
     series = []
     tick = [0]
@@ -197,7 +199,7 @@ def run(seed: int, laps: int = LAPS) -> list[LocRow]:
     distance = float(np.sum(np.hypot(*np.diff(rig.trace.arrays()['pose'][:, :2], axis=0).T)))
     if seed == 1 and laps == LAPS:
         header = ('t_sec', 'odom_distance_m', *(f'{m}_error_m' for m in METHODS))
-        write_rows('e3_errors_seed1', [dict(zip(header, v, strict=True)) for v in series])
+        write_rows('e3_errors_seed1', [dict(zip(header, v)) for v in series])
     rows = []
     for method in METHODS:
         e = np.asarray(errors[method])

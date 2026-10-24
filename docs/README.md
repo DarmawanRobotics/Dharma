@@ -38,7 +38,7 @@ measures a robot's braking limits (chapter 3).
 | `safety_pipeline`  | sources, arbitration, envelope, protective field, e-stop and re-arm      |
 | `follower_fsm`     | the path follower's states and transitions                               |
 | `localization_ekf` | predict, gated updates and the `map -> odom` publication                 |
-| `ci`               | lint and the Humble / Jazzy build and test matrix                        |
+| `ci`               | lint and the Foxy / Humble / Jazzy build and test matrix                 |
 
 ## Build
 
