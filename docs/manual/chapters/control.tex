@@ -176,7 +176,7 @@ the stack does not have.
   H1 & collision with an obstacle ahead while driving & protective field translation limit
     with one braking model; follower motion guard; speed profile & u/\code{test_field::test_wall_ahead_limits_with_the_shared_stopping_model},
     u/\code{test_follower_safety::test_guard_checks_every_direction_of_the_footprint},
-    sim E1 \todo{results} \\
+    sim E1 (Section~\ref{sec:eval-protocol}) \\
   H2 & body corner hits an obstacle while turning in place & rotation limit from the swept ring
     (C1) & u/\code{test_field::test_rotation_next_to_an_obstacle_is_limited},
     r/\code{test_control_mux_node::test_field_limits_rotation_beside_an_obstacle} \\
@@ -185,7 +185,7 @@ the stack does not have.
   H4 & blind LiDAR read as free space & BLOCKED sectors at the source, BLIND $\to$ zero in AUTO,
     creep in REMOTE (B1, F1) & u/\code{test_pipeline::test_blind_lidar_blocks_every_sector},
     u/\code{test_scan::test_all_sectors_zero_is_blind_not_clear},
-    u/\code{test_field::test_blind_scan_stops_auto}, sim E2 \todo{results} \\
+    u/\code{test_field::test_blind_scan_stops_auto}, sim E2 (Section~\ref{sec:eval-protocol}) \\
   H5 & perception stops publishing or lags & receive and stamp age checks, STALE $\to$ zero; BLOCKED
     watchdog in perception; respawn & u/\code{test_scan::test_receive_age_on_monotonic_time},
     u/\code{test_scan::test_header_age_old_and_future},
@@ -232,7 +232,7 @@ the stack does not have.
   H18 & wrong localization correction moves the robot off its path & chi-square gate on the robot
     pose; OFF\_PATH stop (L1, \#1) &
     u/\code{test_estimator::test_gate_rejects_outliers_and_accepts_consistent_fixes_far_from_origin},
-    sim E3 \todo{results} \\
+    sim E3 (Section~\ref{sec:eval-protocol}) \\
   H19 & passing an obstacle at a stop point or while shifted & path shift limited by the measured
     offset; wait at stop points (F4, F6) & u/\code{test_shift::test_measured_offset_limits_the_speed},
     u/\code{test_follower::test_stop_point_with_an_obstacle_waits_instead_of_passing} \\

@@ -6,8 +6,9 @@ regression tests that cover it. IDs with letters (O1, L1, \ldots) come from the 
 mathematical analysis); \code{\#}$n$ IDs come from the second review, numbered per repository.
 Priorities: P0 safety, P1 robustness, P2 maintainability (first review). Tests are
 \code{file::function} in the package's \code{test/} directory (u: \code{test/unit}, r:
-\code{test/ros}). \todo{dharma\_health, dharma\_sim and dharma\_rviz were being refactored when this
-edition was written: their test column is filled in phase 2}
+\code{test/ros}); the C++ panels of \pkg{dharma_rviz} have gtests, written
+\code{file::Suite.Test} (g: \code{test/}). A cell that says ``no dedicated test'' marks a fix that
+is verified only by review or indirectly.
 
 \section{dharma\_odometry}
 
@@ -237,14 +238,16 @@ edition was written: their test column is filled in phase 2}
     new paths & u/\code{test_controllers::test_mppi_is_seeded_and_warm_started},
     u/\code{test_controllers::test_mppi_steers_around_scan_obstacles},
     u/\code{test_controllers::test_pid_integral_is_clamped_and_recovers};
-    regulator \todo{test name} \\
+    regulator: no dedicated test \\
   N3 (P1) & two stopping models (path shift without reaction time) & \code{dharma_utils.safety}
     for path shift, profile and guard & u/\code{test_path::test_profile_brakes_into_stops_with_the_stopping_model},
     u/\code{test_shift::test_no_gap_slows_to_a_stop_with_the_stopping_model} \\
   N4 (P0) & \code{steering_bias} a rate in the message, an angle in one controller &
     \code{heading_offset} (rad) and \code{yaw_rate_bias} (rad/s) in every controller &
     u/\code{test_controllers::test_biases_have_one_meaning_in_every_controller} \\
-  N5 (P2) & hard-coded \code{'map'} / \code{'base_link'} & \param{robot.frames} & \todo{test name} \\
+  N5 (P2) & hard-coded \code{'map'} / \code{'base_link'} & \param{robot.frames} & no dedicated
+    test: the node tests run with the default frames; no frame literal is left in the package
+    sources \\
   -- & speed profile without a forward pass & forward pass (\code{core/path/profile.py}) &
     u/\code{test_path::test_profile_forward_pass_limits_acceleration} \\
   §4 & stale TF stopped the robot without distinction & ages from \code{self.tf}, prediction
@@ -297,12 +300,15 @@ edition was written: their test column is filled in phase 2}
   F13 & avoidance smoothing slowed braking & asymmetric smoothing &
     u/\code{test_avoidance::test_smoothing_never_slows_braking},
     u/\code{test_avoidance::test_policy_brakes_in_one_scan_with_heavy_smoothing} \\
-  F14, B2 & default \code{cmd_vel} bypassed the mux & \topic{control/nav_cmd_vel} &
-    \todo{test name (launch default)} \\
+  F14, B2 & default \code{cmd_vel} bypassed the mux & \topic{control/nav_cmd_vel} (fixed
+    name, \code{utils/outputs.py}) &
+    r/\code{test_path_follower_node::test_follow_pause_estop_resume_and_shutdown} \\
   F15 & path shift kept after a mode change; costmap cache not invalidated; planner pose without
     TF age check & reset on mode change, rebuild on parameter change, age check &
-    u/\code{test_follower::test_mode_change_drops_the_path_shift}; \todo{costmap and age test
-    names} \\
+    u/\code{test_follower::test_mode_change_drops_the_path_shift},
+    r/\code{test_planner_node::test_go_to_arrives_on_the_plan_goal_and_stops} (costmap dropped on
+    a parameter change); planner pose age (\code{tf.fresh} with \param{tf_timeout_sec}): no
+    dedicated test \\
   F16 & ``paused until relocalized'' never un-paused & pause reasons (\code{core/follower/pause.py})
     & u/\code{test_follower_safety::test_relocalization_unpauses},
     u/\code{test_follower_safety::test_estop_is_sticky_and_remote_is_transient} \\
@@ -391,15 +397,38 @@ edition was written: their test column is filled in phase 2}
   \bottomrule
   \endfoot
   H1 (P2) & status as JSON in \code{std_msgs/String}, not actionable & \code{HealthStatus} +
-    \code{DiagnosticArray}, \code{speed_scale} for the mux & \todo{test names} \\
+    \code{DiagnosticArray}, \code{speed_scale} for the mux &
+    u/\code{test_report::test_lidar_rate_low_or_tf_late_halves_the_speed},
+    u/\code{test_report::test_error_stops_and_comes_first},
+    u/\code{test_report::test_lowest_matching_rule_wins_and_rules_never_raise_an_error},
+    r/\code{test_health_node::test_core_states_match_the_messages} \\
   -- & rates only: a 10~Hz topic with 2~s old stamps passed & header stamp age per topic,
-    negative ages & \todo{test names} \\
+    negative ages; raw subscription, stamp read from the CDR bytes &
+    u/\code{test_sensors::test_10hz_topic_with_2s_old_stamps_warns},
+    u/\code{test_sensors::test_stamps_from_the_future_are_a_clock_offset},
+    u/\code{test_sensors::test_slow_and_silent_topics},
+    u/\code{test_sensors::test_cdr_stamp_both_byte_orders},
+    r/\code{test_health_node::test_stamp_from_a_real_serialized_message} \\
   T1--T5 & TF staleness without diagnosis & per-edge ages classified as clock offset or load;
-    optional chrony check & \todo{test names} \\
-  \#9 & health OK while not localized & \code{NONE} is a warning & \todo{test names} \\
-  \#13 & missing-node check ignored namespaces & fully qualified names & \todo{test names} \\
+    optional chrony check & u/\code{test_tf::test_steady_late_edge_is_a_clock_offset},
+    u/\code{test_tf::test_growing_ages_are_load}, u/\code{test_tf::test_stopped_publisher},
+    u/\code{test_tf::test_future_stamps_and_few_samples},
+    u/\code{test_tf::test_clock_check_runs_the_command_once_per_period},
+    r/\code{test_health_node::test_tf_edge_with_a_steady_offset_is_a_clock_problem} \\
+  \#9 & health OK while not localized & \code{NONE} is a warning &
+    u/\code{test_state::test_not_localized_is_a_warning},
+    r/\code{test_health_node::test_old_stamps_not_localized_then_ok_then_lost} \\
+  -- & safety scan and control field not watched & \code{state:safety_scan} and
+    \code{state:control} (stale or blind is an error) & u/\code{test_state::test_safety_scan},
+    u/\code{test_state::test_control_states},
+    r/\code{test_health_node::test_blind_safety_scan_is_an_error} \\
+  \#13 & missing-node check ignored namespaces & fully qualified names &
+    u/\code{test_state::test_nodes_with_namespaces},
+    r/\code{test_health_node::test_expected_node_in_another_namespace_is_missing} \\
   \#17 & unreadable thermal zone or disk reported OK & ``unreadable'' warning, thermal zone
-    whitelist & \todo{test names} \\
+    whitelist & u/\code{test_system::test_unreadable_values_warn},
+    u/\code{test_system::test_whitelisted_zones_only},
+    u/\code{test_system::test_no_whitelisted_zone_warns} \\
 \end{longtable}
 \end{small}
 
@@ -414,14 +443,28 @@ edition was written: their test column is filled in phase 2}
   \bottomrule
   \endfoot
   S1 (P2) & perfect odometry, stamps with \code{now()} & drift model, latency, LiDAR dropout,
-    seeded scenarios & \todo{test names} \\
+    seeded scenarios & u/\code{test_odometry::test_random_walk_grows_with_the_square_root_of_distance},
+    u/\code{test_odometry::test_scale_error_and_yaw_bias_accumulate},
+    u/\code{test_odometry::test_same_seed_same_run},
+    u/\code{test_latency::test_sensor_stamp_is_now_minus_latency},
+    u/\code{test_scenario::test_seeded_generators_are_reproducible_and_independent},
+    u/\code{test_scenario::test_dropouts_and_restarts},
+    r/\code{test_sim_robot_node::test_stamps_carry_the_latency},
+    r/\code{test_sim_robot_node::test_scenario_dropout_silences_the_lidar} \\
   \#10 & ray cast blind from inside a circle; no collisions; LiDAR ignored the vertical field of
     view and the minimum range & fixed ray cast, collision latch, Mid-360 model &
-    \todo{test names} \\
+    u/\code{test_world::test_ray_from_inside_a_circle_sees_its_far_side},
+    u/\code{test_world::test_collisions_with_walls_and_circles},
+    u/\code{test_body::test_collision_stops_and_latches},
+    u/\code{test_lidar::test_low_obstacle_hidden_below_the_lowest_beam},
+    u/\code{test_lidar::test_min_and_max_range},
+    r/\code{test_sim_robot_node::test_collision_latches_and_stops} \\
   \#11 & \code{imu_in_lidar} sign (FAST-LIO's $T_{IL}$) & Livox manual values, derived
-    consistently & \todo{test names} \\
-  \#14 & fixed $\Delta t$ per wall-timer tick (time dilation under load) & measured $\Delta t$ &
-    \todo{test names} \\
+    consistently & u/\code{test_odometry::test_imu_offset_follows_the_livox_manual},
+    u/\code{test_odometry::test_lio_pose_closes_the_bridge_chain} \\
+  \#14 & fixed $\Delta t$ per wall-timer tick (time dilation under load) & measured $\Delta t$,
+    clamped to \param{max_dt} & u/\code{test_body::test_measured_dt_not_ticks},
+    u/\code{test_body::test_stall_is_clamped_to_max_dt} \\
 \end{longtable}
 \end{small}
 
@@ -436,16 +479,30 @@ edition was written: their test column is filled in phase 2}
   \bottomrule
   \endfoot
   \#9 & Tuning: live apply by default, wheel scrolling edits gains, no bounds & apply-on-change
-    off, ranges from descriptors, wheel only with focus & \todo{test names} \\
+    off, ranges from descriptors, wheel only with focus &
+    g/\code{test_tuning::TuningTest.EditorsFollowTheDescriptors},
+    g/\code{test_tuning::TuningTest.WheelIgnoredAndEditsWaitForApply} \\
   \#10 & duplicate panels in \code{robot.rviz}; fixed node names per panel & duplicates removed,
-    unique node names & \todo{test names} \\
+    unique node names & g/\code{test_panels::PanelTest.PanelsGetUniqueNodeNames},
+    g/\code{test_common::Names.UniqueNodeNamesPerInstance},
+    g/\code{test_plugins::Plugins.EveryPanelLoads}; \code{robot.rviz}: no dedicated test \\
   \#11 & no e-stop, mode or field state in RViz; Start resumed during an e-stop & Safety panel;
-    Start disabled while \code{ControlStatus.estop} & \todo{test names} \\
+    Start disabled while \code{ControlStatus.estop} &
+    g/\code{test_panels::PanelTest.MissionStartDisabledDuringEstop},
+    g/\code{test_panels::PanelTest.SafetyEstopAlwaysEnabled},
+    g/\code{test_common::Format.NavigationButtonsFollowStateAndEstop} \\
   \#15 & \code{wait_for_service} blocked the Qt thread; load race; 4 decimals; string arrays
     split on commas & asynchronous readiness, client per request, full precision &
-    \todo{test names} \\
+    g/\code{test_panels::PanelTest.ServiceCallTimesOut},
+    g/\code{test_panels::PanelTest.ServiceCallReportsUnavailableAndSuccess},
+    g/\code{test_tuning::TuningTest.SecondLoadWins},
+    g/\code{test_tuning::TuningYaml.ExportKeepsPrecision},
+    g/\code{test_common::Yaml.ListLines} \\
   \#16 & Tag panel buttons stuck; only the first diagnostic shown; values never stale &
-    timeouts, worst status, age indicator & \todo{test names} \\
+    timeouts, worst status, age indicator &
+    g/\code{test_panels::PanelTest.TagButtonsComeBackAfterTheReply},
+    g/\code{test_common::Diagnostics.WorstOfAllFreshStatuses},
+    g/\code{test_common::Staleness.GoesStaleAfterTimeout} \\
 \end{longtable}
 \end{small}
 
