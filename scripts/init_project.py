@@ -34,6 +34,7 @@ DOCS_ONLY = (
     'docs/wiki',
     'docs/Makefile',
     'docs/authors.tex',
+    'docs/macros.tex',
 )
 VERSION = '0.1.0'
 
