@@ -1,6 +1,6 @@
-# Dev containers, one per ROS distro: scripts/dev.sh up --distro humble|jazzy
+# Dev containers, one per ROS distro: scripts/dev.sh up --distro foxy|humble|jazzy
 # (or docker compose --profile jazzy up -d --build). Build artefacts live in per-distro volumes:
-# a humble build/ and a jazzy build/ must never mix.
+# the build/ of one distro must never mix with another's.
 name: dharma
 
 x-dev: &dev
@@ -19,6 +19,27 @@ x-build: &build
   dockerfile: docker/Dockerfile
 
 services:
+  dev-foxy:
+    <<: *dev
+    profiles: [foxy]
+    build:
+      <<: *build
+      args:
+        ROS_DISTRO: foxy
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+    image: dharma-dev:foxy
+    container_name: dharma-dev-foxy
+    hostname: dharma-foxy
+    ports:
+      - "127.0.0.1:5903:5901" # VNC (vnc://localhost:5903)
+      - "127.0.0.1:6082:6080" # noVNC (http://localhost:6082/vnc.html)
+    volumes:
+      - .:/home/robot/ws
+      - build-foxy:/home/robot/ws/build
+      - install-foxy:/home/robot/ws/install
+      - log-foxy:/home/robot/ws/log
+
   dev-humble:
     <<: *dev
     profiles: [humble]
@@ -62,6 +83,9 @@ services:
       - log-jazzy:/home/robot/ws/log
 
 volumes:
+  build-foxy:
+  install-foxy:
+  log-foxy:
   build-humble:
   install-humble:
   log-humble:
