@@ -56,8 +56,8 @@ def test_robot_namespace_topics():
     nav = includes['dharma_navigation'].arguments
     assert (nav['battery_topic'], nav['odom_topic']) == ('/lite3/battery', '/lite3/odom')
     # the control mux is the only publisher of the driver's cmd_vel
-    assert includes['dharma_control'].remappings == (('cmd_vel', '/lite3/cmd_vel'),)
-    assert all(not i.remappings for p, i in includes.items() if p != 'dharma_control')
+    assert includes['dharma_control'].arguments['cmd_vel_topic'] == '/lite3/cmd_vel'
+    assert all(not i.remappings for i in includes.values())
 
 
 def test_mapping_site_and_odometry():

@@ -37,10 +37,8 @@ windows:
           battery_topic:=/${ROBOT_NS}/battery odom_topic:=/${ROBOT_NS}/odom
       # the control mux is the only publisher of the driver's cmd_vel
       - shell_command: >-
-          ros2 run dharma_control control_mux_node --ros-args
-          --params-file $(ros2 pkg prefix dharma_control)/share/dharma_control/config/control_params.yaml
-          --params-file $BRINGUP_CONFIG/robot.yaml --params-file $BRINGUP_CONFIG/stack.yaml
-          -r cmd_vel:=/${ROBOT_NS}/cmd_vel
+          ros2 launch dharma_control control.launch.py $BRINGUP_ARGS
+          cmd_vel_topic:=/${ROBOT_NS}/cmd_vel
   - window_name: health
     panes:
       - shell_command: ros2 launch dharma_health health.launch.py $BRINGUP_ARGS

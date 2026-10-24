@@ -106,7 +106,7 @@ def component_arguments(o: Options) -> dict:
             'start_mapping': 'true' if o.start_mapping else '',
         },
         'navigation': {'battery_topic': f'{driver}/battery', 'odom_topic': f'{driver}/odom'},
-        'control': {},
+        'control': {'cmd_vel_topic': f'/{o.robot_ns}/cmd_vel'},  # the mux drives the robot
         'health': {},
     }
 
@@ -119,12 +119,11 @@ def components(o: Options) -> list[str]:
 def compose(o: Options) -> list[Include]:
     """Return the package launch files of the stack with their arguments."""
     arguments = component_arguments(o)
-    remappings = {'control': (('cmd_vel', f'/{o.robot_ns}/cmd_vel'),)}
     out = []
     for name in components(o):
         package, launch_file, _ = COMPONENTS[name]
         args = non_empty({**common(o), **arguments[name]})
-        out.append(Include(package, launch_file, args, remappings.get(name, ())))
+        out.append(Include(package, launch_file, args))
     return out
 
 
