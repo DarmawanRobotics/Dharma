@@ -38,6 +38,7 @@ class Options:
     sites_dir: str = ''
     start_mapping: bool = False
     fiducials: bool = True
+    fiducials_detector: str = 'apriltag'  # apriltag | aruco
     camera_image: str = ''
     camera_info: str = ''
     health: bool = True
@@ -56,13 +57,20 @@ COMPONENTS = {
     'navigation': (
         'dharma_navigation',
         'navigation.launch.py',
-        ('planner_node', 'path_loader_node', 'path_follower_node', 'obstacle_avoidance_node'),
+        (
+            'planner_node',
+            'path_loader_node',
+            'path_follower_node',
+            'obstacle_avoidance_node',
+            'docking_node',
+        ),
     ),
     'control': ('dharma_control', 'control.launch.py', ('control_mux_node',)),
     'health': ('dharma_health', 'health.launch.py', (HEALTH_NODE,)),
 }
 ESTIMATOR_NODES = {'fast_lio': ('fastlio_mapping_node',)}  # leg_kilo names its own node
 FIDUCIAL_NODES = ('apriltag_throttle', 'apriltag')
+DETECTOR_NODES = {'apriltag': 'apriltag', 'aruco': 'aruco_detector_node'}
 SIM = ('dharma_sim', 'sim.launch.py', ('sim_robot_node',))
 PARAMETER_ONLY = ('odometry_gate',)  # reads the files, then exits (wait_still)
 
@@ -100,6 +108,7 @@ def component_arguments(o: Options) -> dict:
         'localization': {'sites_dir': o.sites_dir},
         'perception': {
             'fiducials': flag(o.fiducials),
+            'fiducials_detector': o.fiducials_detector,
             'camera_image': o.camera_image,
             'camera_info': o.camera_info,
         },
@@ -150,7 +159,7 @@ def node_names(o: Options, sim: bool = False) -> list[str]:
     names = [n for c in components(o) for n in COMPONENTS[c][2]]
     names += ESTIMATOR_NODES.get(o.odometry, ())
     if o.fiducials:
-        names += FIDUCIAL_NODES
+        names += (FIDUCIAL_NODES[0], DETECTOR_NODES[o.fiducials_detector])
     if sim:
         names += SIM[2]
     return sorted(f'/{n}' for n in names)
@@ -160,4 +169,4 @@ def known_sections() -> list[str]:
     """Return every node name a parameter file of the bringup may configure."""
     names = [n for c in COMPONENTS.values() for n in c[2]]
     names += [n for nodes in ESTIMATOR_NODES.values() for n in nodes]
-    return sorted({*names, *FIDUCIAL_NODES, *SIM[2], *PARAMETER_ONLY})
+    return sorted({*names, *FIDUCIAL_NODES, *DETECTOR_NODES.values(), *SIM[2], *PARAMETER_ONLY})
