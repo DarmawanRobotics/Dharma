@@ -5,6 +5,15 @@ versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+
+- Docking and charging: dharma_navigation's `docking_node` in the bringup (centre on the dock
+  tag, walk in, sit, start charging, undock); `config/stack.yaml` has its hook placeholders for
+  the robot driver, `config/sim.yaml` points them at dharma_sim's dock station, so
+  `docking/dock` works on the simulator (mall_loop: `charging_dock` on the west wall).
+- Bringup argument `fiducials_detector` (`apriltag` | `aruco`): ArUco markers through
+  dharma_perception's `aruco_detector_node`, same TF frames.
+
 ### Changed
 
 - Documentation as plain Markdown in the repository: the GitHub wiki pages moved to `docs/guide/`

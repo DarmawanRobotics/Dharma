@@ -10,6 +10,7 @@ decides what reaches `cmd_vel`.
 | `path_loader_node`        | `navigation/load_path`: read a route CSV inside `sites_dir`, resample, smooth, publish it |
 | `path_follower_node`      | join the route, follow it, final approach, stop points, pause reasons, safety supervisor  |
 | `obstacle_avoidance_node` | a reactive policy on `perception/sector_scan` -> `navigation/avoidance`                   |
+| `docking_node`            | `docking/dock`: centre on the dock tag, walk in, sit, start charging; `docking/undock`    |
 
 ## Go to a pose
 
@@ -81,6 +82,49 @@ Two ways to pass obstacles (`avoidance_mode`):
 
 Every command (following, joining, approach) also passes the **motion guard**: limited along its
 direction by the 360° safety scan with the footprint and the braking model.
+
+## Docking and charging
+
+`docking_node` docks onto a charger marked by a fiducial tag. The tag detector publishes the
+dock tag as a TF frame (`tag.frame`, default `charging_dock`): `apriltag_ros` (tag 4, 36h11) or
+the ArUco detector (`fiducials_detector:=aruco`, see [Localization](Localization.md)). Drive to
+a pose in front of the dock first (`planner/go_to`, the tag in view), then:
+
+```bash
+ros2 service call /docking/dock std_srvs/srv/Trigger     # stops the follower, then docks
+ros2 topic echo /docking/status                          # dharma_interfaces/DockingStatus
+ros2 service call /docking/undock std_srvs/srv/Trigger   # stop charging, stand, back away
+ros2 service call /docking/cancel std_srvs/srv/Trigger
+```
+
+```
+SEARCHING ─► CENTERING ◄─► APPROACHING ─► SETTLING ─► SITTING ─► CHARGING ─► DOCKED
+    └─── a failed attempt: BACKING_OFF ─► SEARCHING (retry.max_retries), then FAILED
+UNDOCKING: stop_charge hooks ─► stand hooks ─► back away undock.distance ─► IDLE
+```
+
+1. **Centre.** The docked pose is `goal.distance` in front of the tag on its normal, facing it
+   (`goal.direction: backward` backs in with a rear camera). An omni / legged robot slides and
+   turns until it is within `centering.lateral_tolerance` and `centering.yaw_tolerance_deg` of
+   the approach line, for `centering.hold_sec`; a diff robot turns toward the line.
+2. **Approach** at up to `approach.speed`, kept centred; drifting beyond
+   `centering.realign_lateral` / `realign_yaw_deg` stops it and it centres again. Detections are
+   folded into a dock estimate in the odom frame (smoothed, outliers rejected); within
+   `approach.blind_distance` the estimate freezes, so the camera may lose the tag at the end.
+3. **Settle** for `settle.time_sec`, then check the pose against a fresh look at the tag
+   (`settle.*` tolerances). Off: back off `retry.backoff_distance` and try again.
+4. **Sit and charge:** the robot driver's `hooks.sit`, then `hooks.charge` (`std_srvs/Trigger`,
+   empty: skipped), then wait for `battery` to report `POWER_SUPPLY_STATUS_CHARGING` or `FULL`
+   (`charge.confirm_timeout_sec`, 0: do not wait).
+
+Safety: the commands go to `control/nav_cmd_vel` like the follower's; the e-stop or REMOTE ends
+an attempt (FAILED, one zero), a mux that has not armed navigation gets neutral commands, and a
+robot commanded but not moving for `supervision.stall_timeout_sec` (held by the field) fails
+the attempt. **The protective field still applies:** the tag and the dock are in the safety
+scan, so the leading edge stops `field.margin` plus the separation term (about 0.31 m with the
+defaults) before them. `goal.distance` must leave that room (default 0.75 m with a 0.40 m
+front); `docking_node` reads the mux's field values at start and logs an error with the
+distance it needs when it does not.
 
 ## Controllers
 

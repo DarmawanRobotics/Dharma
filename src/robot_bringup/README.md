@@ -35,7 +35,8 @@ ros2 launch robot_bringup sim.launch.py rviz:=true scenario:=person_crossing
 | `odometry`                     | `fast_lio` (`ODOMETRY`) | `fast_lio`, `leg_kilo` or `external` (robot launch only)                                                                          |
 | `site` / `sites_dir`           | (`SITE`, `SITES_DIR`)   | empty: from the parameter files (or the last site)                                                                                |
 | `start_mapping`                | `false`                 | map `site` from the start when it is new (odometry keeps its map)                                                                 |
-| `fiducials`                    | `true` (sim `false`)    | camera throttle + AprilTag detector                                                                                               |
+| `fiducials`                    | `true` (sim `false`)    | camera throttle + tag detector                                                                                                    |
+| `fiducials_detector`           | `apriltag`              | `apriltag` (apriltag_ros) or `aruco` (dharma_perception `aruco_detector_node`), both publish the tags on TF                       |
 | `camera_image` / `camera_info` |                         | empty: the perception defaults                                                                                                    |
 | `health`                       | `true`                  | start the health monitor                                                                                                          |
 | `world` / `scenario` / `rviz`  | / / `false`             | simulator only                                                                                                                    |

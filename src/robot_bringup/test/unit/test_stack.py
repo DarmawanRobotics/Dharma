@@ -85,6 +85,16 @@ def test_perception_fiducials():
     assert 'camera_info' not in args
 
 
+def test_perception_aruco_detector():
+    o = options(fiducials_detector='aruco')
+    perception = by_package(stack.compose(o))['dharma_perception'].arguments
+    assert perception['fiducials_detector'] == 'aruco'
+    names = stack.node_names(o)
+    assert '/aruco_detector_node' in names and '/apriltag' not in names
+    assert '/docking_node' in names
+    assert 'aruco_detector_node' in stack.known_sections()
+
+
 def test_sim_include():
     o = options(robot_ns='robot', site='mall_loop', sites_dir='/tmp/s', odometry='external')
     sim = stack.sim_include(o, world='', scenario='drift', rviz=True)
