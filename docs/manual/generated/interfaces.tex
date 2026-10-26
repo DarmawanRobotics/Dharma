@@ -40,6 +40,37 @@
 \bottomrule
 \end{tabularx}
 \end{small}
+\subsection*{\texorpdfstring{\code{DockingStatus}}{DockingStatus} (msg)}
+\begin{small}
+\begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}
+\toprule
+\multicolumn{3}{@{}l}{\emph{constants}} \\
+\code{IDLE} = 0 & \code{uint8} &  \\
+\code{SEARCHING} = 1 & \code{uint8} & waiting for the dock tag to come into view \\
+\code{CENTERING} = 2 & \code{uint8} & turning / sliding until the tag is centred on the approach line \\
+\code{APPROACHING} = 3 & \code{uint8} & walking toward the dock, kept centred, until the goal distance \\
+\code{SETTLING} = 4 & \code{uint8} & standing still, then checking the final pose against the tag \\
+\code{BACKING_OFF} = 5 & \code{uint8} & moving away from the dock before another attempt \\
+\code{SITTING} = 6 & \code{uint8} & the sit hooks run \\
+\code{CHARGING} = 7 & \code{uint8} & the charge hooks run, then waiting for the battery to charge \\
+\code{DOCKED} = 8 & \code{uint8} & sitting on the dock, charging \\
+\code{UNDOCKING} = 9 & \code{uint8} & stop-charge and stand hooks, then backing away from the dock \\
+\code{FAILED} = 10 & \code{uint8} &  \\
+\multicolumn{3}{@{}l}{\emph{fields}} \\
+\code{header} & \code{std_msgs/Header} &  \\
+\code{state} & \code{uint8} &  \\
+\code{pause_reasons} & \code{string[]} & disarmed (the control mux has not armed navigation yet) \\
+\code{tag_visible} & \code{bool} & a fresh detection of the dock tag \\
+\code{tag_age} & \code{float32} & s since the last detection (inf: never) \\
+\code{remaining} & \code{float32} & m still to walk toward the dock (goal frame) \\
+\code{lateral} & \code{float32} & m, robot beside the approach line (+left of the line) \\
+\code{yaw_error} & \code{float32} & rad, robot heading minus the goal heading \\
+\code{attempt} & \code{uint32} & 1 for the first approach, +1 for every retry \\
+\code{charging} & \code{bool} & the battery reports charging (or full) \\
+\code{message} & \code{string} &  \\
+\bottomrule
+\end{tabularx}
+\end{small}
 \subsection*{\texorpdfstring{\code{HealthStatus}}{HealthStatus} (msg)}
 \begin{small}
 \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.25\textwidth}X@{}}

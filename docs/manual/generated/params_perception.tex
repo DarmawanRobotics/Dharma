@@ -46,5 +46,11 @@ Parameter & Default & Unit & Range & Description \\
 \code{blind.regions}$^\dagger$ & 4 &  & 1..36 & azimuth regions around the sensor z axis \\
 \code{blind.min_region_points}$^\dagger$ & 0 &  & 0..100000 & fewer points in any region: blind (0: off) \\
 \code{publish_markers}$^\dagger$ & true &  &  & perception/obstacles for RViz \\
+\multicolumn{5}{@{}l}{\textbf{aruco\_\allowbreak{}detector\_\allowbreak{}node}} \\
+\code{dictionary}$^\dagger$ & \code{DICT_4X4_50} &  &  & cv2.aruco predefined dictionary \\
+\code{ids}$^\dagger$ & [4] &  &  & marker ids published as TF frames \\
+\code{frames}$^\dagger$ & [\code{charging_dock}] &  &  & TF frame per id \\
+\code{sizes}$^\dagger$ & [0.15] & m &  & edge length per id \\
+\code{max_distance} & 6 & m & 0.1..50 & poses further than this are dropped \\
 \end{longtable}
 \end{small}

@@ -65,7 +65,11 @@ from \code{msg/} and \code{srv/}.
   \topic{navigation/load_path} & LoadPath & path loader \\
   \topic{navigation/waypoints}, \topic{navigation/path} & WaypointPath, Path & path loader \\
   \topic{navigation/avoidance} & AvoidanceCommand & avoidance node \\
-  \topic{control/nav_cmd_vel} & Twist & follower \\
+  \topic{control/nav_cmd_vel} & Twist & follower, docking \\
+  \topic{docking/dock}, \topic{undock}, \topic{cancel} & Trigger & docking \\
+  \topic{docking/status}, \topic{docking/goal} & DockingStatus, PoseStamped & docking \\
+  tag frames on TF (\frm{charging_dock}, \ldots) & tf2\_msgs/TFMessage & apriltag, ArUco
+    detector, simulator \\
   \topic{cmd_vel} & Twist & control mux (only) \\
   \topic{control/status} & ControlStatus & control mux \\
   \topic{control/set_mode} & SetMode & control mux \\

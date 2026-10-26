@@ -50,6 +50,7 @@ Parameter & Default & Unit & Range & Description \\
 \code{loop_route} & false &  &  & restart a closed route at its end (patrol) \\
 \code{loop_close_distance} & 1 & m & 0..20 & end this close to the start: a closed route \\
 \code{require_localization} & true &  &  & pause while localization/status is NONE \\
+\code{control_node}$^\dagger$ & \code{control_mux_node} &  &  & control mux whose field the guard must cover (checked once; empty: no check) \\
 \code{low_battery} & 0.2 &  & 0..1 & below: finish the lap, no new one \\
 \code{critical_battery} & 0.1 &  & 0..1 & below: pause (reason battery) \\
 \code{battery_hysteresis} & 0.05 &  & 0..0.5 & recharge above + this \\
@@ -68,7 +69,12 @@ Parameter & Default & Unit & Range & Description \\
 \code{safety.tf_compensate_sec}$^\dagger$ & 0.1 & s & 0..5 & older poses are predicted forward \\
 \code{safety.clock_tolerance_sec}$^\dagger$ & 0.1 & s & 0..5 & a pose from further in the future: clock \\
 \code{safety.emergency_release_sec} & 1 & s & 0..30 & an emergency stop holds this long after it clears \\
-\code{safety.blocked_timeout_sec} & 10 & s & 0.5..600 & no progress this long: BLOCKED \\
+\code{safety.lateral_margin}$^\dagger$ & 0.1 & m & 0..1 & extra width of the guarded path, >= the control field.lateral\_\allowbreak{}margin \\
+\code{safety.human_speed}$^\dagger$ & 0.5 & m/\allowbreak{}s & 0..3 & assumed speed of a person walking toward the robot, >= the control field.human\_\allowbreak{}speed \\
+\code{safety.pass_margin}$^\dagger$ & 0.15 & m & 0..5 & gap kept to a point passed within lateral\_\allowbreak{}margin, >= the control field.margin \\
+\code{safety.blocked_timeout_sec} & 10 & s & 0.5..600 & standing still this long: BLOCKED \\
+\code{safety.stall_distance} & 0.1 & m & 0..2 & moved less than this (measured): standing still \\
+\code{safety.stall_yaw_deg} & 10 & deg & 0..180 & turned less than this: standing still \\
 \code{safety.off_path_slow} & 0.6 & m & 0.05..10 & further from the route: slow to the floor speed \\
 \code{safety.off_path_stop} & 1.5 & m & 0.1..20 & further from the route: OFF\_\allowbreak{}PATH, stopped \\
 \code{path_shift.max_offset} & 0.8 & m & 0..5 & furthest from the route \\
@@ -76,6 +82,7 @@ Parameter & Default & Unit & Range & Description \\
 \code{path_shift.look_ahead} & 2 & m & 0.1..20 & route ahead of the front edge that must be free \\
 \code{path_shift.clearance} & 0.1 & m & 0..2 & gap kept beside the body \\
 \code{path_shift.offset_rate} & 0.3 & m/\allowbreak{}s & 0.01..5 & how fast it slides onto a new offset \\
+\code{path_shift.max_lead} & 0.25 & m & 0.02..2 & the offset leads the robot by at most this \\
 \code{path_shift.switch_cost} & 0.5 &  & 0..10 & keeps its side (hysteresis) \\
 \code{path_shift.switch_margin} & 0.05 & m & 0..1 & extra clearance a new offset needs \\
 \code{path_shift.return_delay_sec} & 0.5 & s & 0..30 & a way back must stay proposed this long \\
@@ -98,6 +105,8 @@ Parameter & Default & Unit & Range & Description \\
 \code{hooks.inspection}$^\dagger$ & [] &  &  & called at every stop point \\
 \code{hooks.timeout_sec}$^\dagger$ & 5 & s & 0.1..120 & start and stop hook timeout \\
 \code{hooks.inspection_timeout_sec} & 20 & s & 0.1..600 & a stop waits this long for inspections \\
+\code{inspection.reverse_distance_m} & 0 & m & 0..5 & back up this far after the dwell (0: off) \\
+\code{inspection.reverse_speed} & 0.1 & m/\allowbreak{}s & 0.01..1 & backing-up speed (360 deg guard, rear sectors) \\
 \code{regulator.enabled} & false &  &  & scale the speed down when turning hard \\
 \code{regulator.reference_yaw_rate} & 0.3 & rad/\allowbreak{}s & 0..5 & turning slower than this needs no slow-down \\
 \code{regulator.kp} & 0.5 & s/\allowbreak{}rad & 0..10 & scale per rad/s above it \\
@@ -111,11 +120,13 @@ Parameter & Default & Unit & Range & Description \\
 \code{markers} & true &  &  & publish RViz markers \\
 \multicolumn{5}{@{}l}{\textbf{obstacle\_\allowbreak{}avoidance\_\allowbreak{}node}} \\
 \code{policy} & \code{vfh} &  &  & avoidance policy (dharma.avoidance) \\
-\code{shared.safe_distance} & 1 & m & 0.1..20 & obstacles closer than this shape the command \\
+\code{shared.safe_distance} & 1.5 & m & 0.1..20 & obstacles closer than this shape the command (beyond the guard stopping reach) \\
 \code{shared.emergency_distance} & 0.75 & m & 0..10 & obstacle in the cone closer than this: stop \\
 \code{shared.emergency_cone_deg} & 60 & deg & 1..360 & frontal cone of the emergency stop \\
 \code{shared.max_heading_offset_deg} & 60 & deg & 0..180 & largest turn of the direction of travel \\
 \code{shared.smoothing} & 0.8 &  & 0..0.99 & 0..1 filter on steering and speeding up (never on braking) \\
+\code{shared.window_deg} & 180 & deg & 10..360 & sectors evaluated around the travel direction \\
+\code{shared.body_margin} & 0.15 & m & 0..2 & gap kept beside the body on a chosen heading (> the guard lateral\_\allowbreak{}margin) \\
 \code{braitenberg.steering_gain} & 1 & rad & 0..10 & turn per unit danger \\
 \code{braitenberg.velocity_gain} & 1 &  & 0..10 & slow-down per unit danger \\
 \code{braitenberg.steering_zone_center_deg} & 45 & deg & 0..180 &  \\
@@ -123,7 +134,7 @@ Parameter & Default & Unit & Range & Description \\
 \code{braitenberg.velocity_zone_center_deg} & 60 & deg & 0..180 &  \\
 \code{braitenberg.velocity_zone_width_deg} & 90 & deg & 1..360 &  \\
 \code{braitenberg.following_zone_width_deg} & 30 & deg & 1..360 &  \\
-\code{vfh.min_gap_width_deg} & 20 & deg & 1..180 & narrowest passable gap \\
+\code{vfh.min_gap_width_deg} & 20 & deg & 1..180 & narrowest run of free headings taken \\
 \code{vfh.steering_gain} & 1 &  & 0..5 & fraction of the gap heading taken \\
 \code{vfh.velocity_gain} & 1 &  & 0..10 & slow-down per unit frontal danger \\
 \code{potential_field.repulsion_gain} & 0.5 &  & 0..10 & strength of the repulsion \\
@@ -131,7 +142,7 @@ Parameter & Default & Unit & Range & Description \\
 \code{potential_field.lateral_gain} & 0.3 &  & 0..5 & sideways m/s per unit force \\
 \code{potential_field.max_lateral} & 0.2 & m/\allowbreak{}s & 0..2 & cap on the sideways push \\
 \code{potential_field.velocity_gain} & 1 &  & 0..10 & slow-down per unit frontal danger \\
-\code{follow_gap.bubble_radius} & 0.45 & m & 0..5 & safety bubble around the nearest obstacle \\
+\code{follow_gap.bubble_radius} & 0.45 & m & 0..5 & safety bubble around the nearest obstacle (at least half\_\allowbreak{}width + body\_\allowbreak{}margin) \\
 \code{follow_gap.steering_gain} & 1 &  & 0..5 & fraction of the gap heading taken \\
 \code{follow_gap.velocity_gain} & 1 &  & 0..10 & slow-down per unit frontal danger \\
 \code{markers} & true &  &  & publish RViz markers \\

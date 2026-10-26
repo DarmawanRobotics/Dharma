@@ -58,6 +58,18 @@ All models are pure Python and numpy in \code{dharma_sim/core} and unit-tested w
     bridge levels at once. The IMU sits at $(0.011, 0.02329, -0.04412)$~m in \frm{livox_frame}
     (Livox manual); FAST-LIO's \code{extrinsic_T} is the LiDAR in the IMU frame, its negative.
     0.1 used FAST-LIO's $T_{IL}$ with the wrong sign (review \#11).
+  \item[Tag camera and dock] (\code{dock.py}). A camera with a fiducial detector at
+    \param{camera.mount_xyz}, turned by \param{camera.yaw_deg} (180: a rear camera): a tag of
+    \param{camera.tags} is published as TF \frm{base_link}$\to$tag while it is within
+    \param{camera.range_min}..\param{range_max}, inside \param{fov_deg}, seen less obliquely than
+    \param{max_incidence_deg} and not hidden by a wall (a ray cast to it), with position and yaw
+    noise. The world's \code{dock} puts the charging contacts \code{distance} in front of its
+    tag; the dock station answers \topic{sim/sit} (the body then ignores commands),
+    \topic{sim/stand} (refused while charging), \topic{sim/charge/start} (only sitting within
+    \code{tolerance} and \code{yaw_tolerance_deg} of the contacts) and \topic{sim/charge/stop};
+    while charging the battery gains \param{charge_per_hour} and \topic{battery} reports
+    \code{POWER_SUPPLY_STATUS_CHARGING} (\code{FULL} at 100~\%, \code{DISCHARGING} otherwise).
+    The mall world has \frm{charging_dock} on its west wall, contacts 0.75~m in front of it.
 \end{description}
 
 The body is planar: no gait, pitch or roll, no ceiling, no negative obstacles. Experiments that
@@ -81,6 +93,10 @@ recorded data or the robot.
     (\param{initial_pose_hz}, 0: off) \\
   inspection at a stop point & \topic{sim/inspect} (\code{std_srvs/Trigger}) answers
     \code{clear} \\
+  camera and tag detector & TF \frm{base_link}$\to$\frm{charging_dock} while the dock tag is in
+    view (\param{camera.*}) \\
+  sit, stand and charge & \topic{sim/sit}, \topic{sim/stand}, \topic{sim/charge/start},
+    \topic{sim/charge/stop} (Trigger); \topic{/<ns>/battery} reports charging \\
   people and boxes & \topic{sim/obstacles} (PoseArray in the map frame) replaces the dynamic
     circles \\
   the truth & \topic{sim/ground_truth} (PoseStamped in \param{robot.frames.map}),

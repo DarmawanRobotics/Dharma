@@ -44,6 +44,7 @@ TABLES = {
     ],
     'perception': [
         ('lidar_sector_node', 'dharma_perception.core.config', 'PerceptionConfig', ''),
+        ('aruco_detector_node', 'dharma_perception.core.aruco', 'ArucoConfig', ''),
     ],
     'mapping': [
         ('grid_mapper_node', 'dharma_mapping.core.config', 'MapperConfig', ''),
@@ -60,6 +61,9 @@ TABLES = {
             'AvoidanceConfig',
             '',
         ),
+    ],
+    'docking': [
+        ('docking_node', 'dharma_navigation.core.config.docking', 'DockingConfig', ''),
     ],
     'controllers': [
         (

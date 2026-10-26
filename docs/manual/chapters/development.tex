@@ -300,7 +300,15 @@ from. It holds:
     (builds of two distributions never mix), ports bound to localhost (Foxy 5903 / 6082, Humble
     5901 / 6080, Jazzy 5902 / 6081).
   \item[\code{scripts/dev.sh}] \texttt{[--distro foxy|humble|jazzy] up | shell | build | test |
-    vnc | down | clean | import} (default distribution from \code{DHARMA_DISTRO}, else Humble).
+    vnc | down | clean | import | doctor} (default distribution from \code{DHARMA_DISTRO}, else
+    Humble). \texttt{doctor} checks Docker, compose v2, the engine architecture, CPUs and memory
+    (8~GiB or more), vcstool and access to the private repositories. \texttt{import} uses
+    vcstool, or plain git without it. The script runs on the bash 3.2 of macOS (no empty
+    \texttt{"\$\{array[@]\}"} under \texttt{set -u}, no bash 4 features). On Linux the container
+    user gets the caller's uid and gid; on macOS it stays 1000 (Docker Desktop maps the ownership
+    of the bind mount) and the image reuses a gid it already has (macOS gid 20 is
+    \code{dialout} in Ubuntu). On Apple Silicon the images build natively for arm64 (the ROS
+    images are multi-arch).
   \item[\code{scripts/setup.sh}] \texttt{check} or \texttt{install <components>} on a robot
     computer or a development machine: \code{ros}, \code{tools}, \code{repos}, \code{livox},
     \code{rosdep}, \code{build} and \code{service} (a systemd unit running the bringup at boot);
@@ -329,7 +337,8 @@ merged file and only the arguments that are set. It remaps the mux's \topic{cmd_
 \code{use_sim_time}, \code{log_level}, \code{robot_ns} (\code{ROBOT_NS}), \code{robot_driver}
 (\code{<package>[/<file>.launch.py]}, started with \code{namespace:=<robot_ns>}),
 \code{odometry} (\code{fast_lio}, \code{leg_kilo} or \code{external}), \code{site},
-\code{sites_dir}, \code{start_mapping}, \code{fiducials}, \code{camera_image},
+\code{sites_dir}, \code{start_mapping}, \code{fiducials}, \code{fiducials_detector}
+(\code{apriltag} or \code{aruco}), \code{camera_image},
 \code{camera_info}, \code{health}, and for the simulator \code{world}, \code{scenario},
 \code{rviz}. A robot driver package provides \code{launch/bringup.launch.py} accepting
 \code{namespace}; it publishes \topic{/<ns>/odom}, \topic{/<ns>/battery}, the LiDAR and IMU and

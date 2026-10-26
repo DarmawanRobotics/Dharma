@@ -15,9 +15,9 @@
 (driver, URDF, sensor mounts and the robot profile). Estimation and local perception turn raw
 LiDAR, IMU and camera data into odometry and obstacle sectors around the robot; the world model
 holds the map, the sites and the correction from odometry to the map; navigation plans and
-follows paths. Safety is a separate package beside all layers: one control multiplexer is the
-only publisher of the robot's velocity command, and a health monitor turns degraded sensing
-into a requested speed scale. Each repository depends only on the two base packages, and the
+follows paths and docks onto a fiducial-marked charger. Safety is a separate package beside all
+layers: one control multiplexer is the only publisher of the robot's velocity command, and a
+health monitor turns degraded sensing into a requested speed scale. Each repository depends only on the two base packages, and the
 product bringup composes the package launch files.
 
 \textbf{One robot profile.} Every node reads the same \param{robot.*} parameters, parsed into

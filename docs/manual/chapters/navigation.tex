@@ -19,6 +19,8 @@ reaches the robot.
     guard; publishes \topic{control/nav_cmd_vel} \\
   \code{obstacle_avoidance_node} & a reactive policy on \topic{perception/sector_scan}
     $\to$ \topic{navigation/avoidance} \\
+  \code{docking_node} & \topic{docking/dock}: centre on the dock tag, walk to the docked pose,
+    sit and start charging through the robot's hooks; \topic{docking/undock} \\
   \bottomrule
 \end{tabularx}
 \end{center}
@@ -298,6 +300,163 @@ A set of reasons, each with its own way of clearing (review F16):
 \end{center}
 Start is refused while \code{estop} or \code{localization} hold.
 
+\section{Docking and charging}
+\label{sec:docking}
+
+\code{docking_node} docks the robot onto a charger marked by a fiducial tag, sits it down and
+starts charging, and undocks it again. Like the follower it is a thin node around a pure core
+(\code{core/docking/}: geometry and dock estimate, control law, state machine, hook phases);
+its commands go to \topic{control/nav_cmd_vel}, so the control mux, its protective field and
+the e-stop apply unchanged. \topic{docking/dock} first stops the follower
+(\param{hooks.navigation_stop}); the robot is brought in front of the dock beforehand, for
+example with \topic{planner/go_to}.
+
+\subsection{The tag and the docked pose}
+
+The detector (\code{apriltag_ros}, or \code{aruco_detector_node}, Section~\ref{sec:aruco})
+publishes the tag on TF under the camera; the node looks up $\T{odom}{tag}$ through the camera,
+so any camera mounting works. The plate normal is the tag axis \param{tag.normal_axis} projected
+on the floor plane; detectors disagree on its sign, so the sign is chosen to point at the robot,
+which always sees the front of the plate:
+\begin{equation}
+  \hat{\vect{n}} = \operatorname{sgn}\!\big(\vect{a}\cdot(\vect{p}_r - \vect{p}_t)\big)\,
+  \frac{\vect{a}}{\lVert\vect{a}\rVert}, \qquad
+  \vect{T}_t = \big(\vect{p}_t,\ \operatorname{atan2}(\hat n_y, \hat n_x)\big) \in \SE{2},
+\end{equation}
+with $\vect{a}$ the horizontal part of the axis, $\vect{p}_t$ the tag and $\vect{p}_r$ the robot
+position in \frm{odom}. A tag whose axis lies less than half in the floor plane (a plate on the
+floor, a bad fix) is refused. The docked pose of \frm{base_link} lies on the normal at
+\param{goal.distance} $d$, beside it by \param{goal.lateral_offset} $\ell$ (to the left of a
+viewer facing the tag), facing the tag for \param{goal.direction} \code{forward} or away from it
+for \code{backward} (a rear camera), turned by \param{goal.yaw_offset_deg} $\delta$:
+\begin{equation}
+  \vect{G} = \vect{T}_t \oplus (d,\ -\ell,\ \phi + \delta), \qquad
+  \phi = \begin{cases} \pi & \text{forward} \\ 0 & \text{backward} \end{cases}, \qquad
+  \sigma = \pm 1.
+\end{equation}
+The robot pose $\vect{R}$ (\frm{odom}$\to$\frm{base_link}) in the goal frame,
+$\vect{r} = \vect{G}^{-1} \oplus \vect{R}$, gives the errors the controller and
+\topic{docking/status} use: remaining distance $e_d = -\sigma r_x$, lateral offset
+$e_\ell = r_y$ and heading error $e_\psi = r_\psi$.
+
+\textbf{Dock estimate.} Every fresh detection (younger than \param{tag.timeout_sec}, within
+\param{tag.max_range}) gives a goal $\vect{G}_k$; the estimate moves toward it by the weight
+$w$ = \param{tag.smoothing}, the angle on the circle,
+\begin{equation}
+  \hat{\vect{G}} \leftarrow \hat{\vect{G}} + w\,(\vect{G}_k \ominus \hat{\vect{G}}), \qquad
+  \text{rejected when } \lVert \vect{G}_k - \hat{\vect{G}} \rVert > J,
+\end{equation}
+with $J$ = \param{tag.max_jump}; \param{tag.max_outliers} rejections in a row restart the
+estimate (the dock or the odometry really moved). The estimate lives in \frm{odom}, which drifts
+little over the last metre, so it holds through short dropouts; within
+\param{approach.blind_distance} of the goal it freezes and the camera may lose the tag (too
+close to detect it).
+
+\subsection{Control law}
+
+Velocities are chosen in the goal frame and rotated into the robot frame. An omnidirectional
+(or legged) robot corrects the heading and the lateral offset together:
+\begin{gather}
+  \begin{pmatrix} v_x \\ v_y \end{pmatrix} = \mathbf{R}(-e_\psi)
+  \begin{pmatrix} \sigma\,v_a \\ \operatorname{sat}_{v_\ell}(-k_\ell e_\ell) \end{pmatrix},
+  \qquad \omega = \operatorname{sat}_{\omega_{\max}}(-k_\psi e_\psi), \\
+  v_a = \min\!\big(v_{\max},\ \max(v_{\min},\ k_d e_d)\big)
+    \Big(1 - \tfrac12 \min\big(\tfrac{|e_\ell|}{\ell_{\mathrm{re}}}, 1\big)\Big),
+\end{gather}
+with $v_a = 0$ while centring and for $e_d \le 0$ (gains \param{approach.kp_distance},
+\param{kp_lateral}, \param{kp_yaw}; caps \param{approach.speed}, \param{min_speed},
+\param{max_lateral_speed}, \param{max_yaw_rate} and \param{robot.limits};
+$\ell_{\mathrm{re}}$ = \param{centering.realign_lateral}). A differential robot cannot slide: it
+turns toward the point \param{approach.look_ahead} $L$ ahead on the approach line and follows
+the line by steering,
+\begin{gather}
+  \theta^* = \operatorname{atan2}(-e_\ell,\ \sigma L) + \begin{cases} 0 & \sigma = 1 \\ \pi &
+  \sigma = -1 \end{cases}, \qquad e_\theta = e_\psi - \theta^*, \\
+  \omega = \operatorname{sat}(-k_\psi e_\theta), \qquad v_x = \sigma\,v_a \max(\cos e_\theta, 0),
+\end{gather}
+and keeps the goal heading within \param{approach.blind_distance}; a residual offset is left to
+the settle check.
+
+\subsection{State machine}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}p{0.17\textwidth}X@{}}
+  \toprule
+  State & Meaning and next state \\
+  \midrule
+  \code{SEARCHING} & waiting for a fresh detection; \param{supervision.search_timeout_sec}
+    without one fails the attempt \\
+  \code{CENTERING} & centring without walking toward the dock (zero $v_a$): omni robots until
+    $|e_\ell| \le$ \param{centering.lateral_tolerance} and $|e_\psi| \le$
+    \param{centering.yaw_tolerance_deg} for \param{centering.hold_sec}, diff robots until
+    $|e_\theta|$ is within the yaw tolerance; then \code{APPROACHING} \\
+  \code{APPROACHING} & walking in, kept centred; beyond \param{centering.realign_lateral} or
+    \param{realign_yaw_deg} (outside the blind distance) back to \code{CENTERING}; at
+    $e_d \le$ \param{approach.position_tolerance} \code{SETTLING} \\
+  \code{SETTLING} & zero for \param{settle.time_sec}, then the pose is checked against a fresh
+    detection (else the estimate) with the \param{settle.*} tolerances: \code{SITTING}, or the
+    attempt fails \\
+  \code{BACKING_OFF} & after a failed attempt: straight away from the dock for
+    \param{retry.backoff_distance}, then \code{SEARCHING} with a fresh estimate;
+    after \param{retry.max_retries} retries \code{FAILED} \\
+  \code{SITTING} & one zero, then the \param{hooks.sit} services; after
+    \param{hooks.sit_settle_sec} \code{CHARGING} \\
+  \code{CHARGING} & the \param{hooks.charge} services, then \topic{battery} must report
+    \code{POWER_SUPPLY_STATUS_CHARGING} or \code{FULL} within \param{charge.confirm_timeout_sec}
+    (0: not checked): \code{DOCKED} \\
+  \code{DOCKED} & sitting on the dock; the status reports whether the battery charges \\
+  \code{UNDOCKING} & \param{hooks.stop_charge}, \param{hooks.stand}, \param{hooks.stand_settle_sec},
+    then straight away from the dock for \param{undock.distance}: \code{IDLE} \\
+  \code{FAILED} & the reason in the message; a failing hook ends here too \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+An attempt also fails when the tag is lost for \param{supervision.lost_timeout_sec} outside the
+blind distance, when centring or the approach exceed their timeouts, when the odometry pose is
+older than \param{supervision.pose_timeout_sec} for the lost timeout, and when the robot is
+commanded but moves less than \param{supervision.stall_distance} and turns less than
+\param{stall_yaw_deg} for \param{stall_timeout_sec} (held by the protective field or an
+obstacle). Hooks are \code{std_srvs/Trigger} services of the robot driver, every service of a
+group called in parallel with \param{hooks.timeout_sec}; an empty group is skipped (a wheeled
+robot that charges standing). Answers carry a ticket: a cancel or a failure drops late ones.
+While the robot sits on the dock \topic{docking/dock} is refused (undock first).
+
+\subsection{Safety}
+
+\begin{itemize}
+  \item The e-stop or REMOTE mode on \topic{control/status} ends an attempt at once
+    (\code{FAILED}, one zero command); leaving any moving state publishes one zero, then nothing,
+    so the node never fights the follower or an operator.
+  \item While the mux has not armed navigation the node sends neutral commands (they arm it),
+    reports the pause reason \code{disarmed} and its phase clocks stop.
+  \item \textbf{The protective field still applies.} The tag plate and the dock are in the
+    safety scan: walking toward them at the final speed $v_{\min}$, the field keeps the margin
+    $m$ (\param{field.margin}) plus the protective distance of eq.~\eqref{eq:m-braking} with the
+    separation term of a person at $v_h$ (\param{field.human_speed}) between the leading edge
+    and the plate. The docked pose is reachable only if
+    \begin{equation}
+      d - f \;\ge\; m + v_{\min}\tr + \frac{v_{\min}^2}{2a} + v_h\Big(\tr + \frac{v_{\min}}{a}\Big),
+    \end{equation}
+    with $f$ the front (or, backing in, the rear) of the footprint. With the defaults
+    ($m$ = 0.15~m, $v_h$ = 0.5~m/s, $\tr$ = 0.25~s, $a$ = 0.6~m/s$^2$, $v_{\min}$ = 0.03~m/s)
+    the right-hand side is 0.31~m, so a 0.40~m front edge needs $d \ge 0.71$~m; the default
+    \param{goal.distance} is 0.75~m. At start the node reads the field values of
+    \param{control_node} (like the follower's guard check) and logs an error with the distance
+    it needs when the goal lies inside. Docking closer to a charger needs a reduced field for
+    docking: a safety decision of the product, not a default of the stack.
+  \item A failed hook leaves the robot where it is; nothing moves until \topic{docking/undock}.
+\end{itemize}
+
+\textbf{Tests.} \code{test/unit/test_docking.py} and \code{test_docking_geometry.py} run the
+core on a kinematic robot with a camera (field of view, minimum range, noise): omni, diff,
+backing in, a lateral offset, a tag never seen, a tag lost close to the dock, e-stop and REMOTE,
+a disarmed mux, a held robot and the retry, failing hooks, a charge not confirmed, undocking,
+cancel and the field check. \code{test/ros/test_docking_node.py} runs the node with TF, hook
+services and a battery from dock to \code{DOCKED} and back to \code{IDLE}. On the simulator
+(Chapter~\ref{ch:sim}) with perception and the real control mux, the robot docked
+1.7~cm from the charging contacts in about 17~s.
+
 \section{Interfaces}
 
 \begin{center}
@@ -315,7 +474,10 @@ Start is refused while \code{estop} or \code{localization} hold.
   \topic{navigation/stop_point} & StopPointEvent & \\
   \topic{navigation/waypoints}, \topic{navigation/path} & WaypointPath, Path & loaded route \\
   \topic{navigation/avoidance} & AvoidanceCommand & avoidance $\to$ follower \\
-  \topic{control/nav_cmd_vel} & Twist & to the control mux \\
+  \topic{control/nav_cmd_vel} & Twist & to the control mux (follower, docking) \\
+  \topic{docking/dock}, \topic{undock}, \topic{cancel} & Trigger & dock and charge, leave, stop \\
+  \topic{docking/status}, \topic{docking/goal} & DockingStatus (latched), PoseStamped & state,
+    errors to the dock, attempt, charging; docked pose \\
   in: \topic{/map}, \topic{perception/safety_scan}, \topic{perception/sector_scan},
     \topic{control/status}, \topic{localization/status}, battery, odom & & \\
   \bottomrule
@@ -331,3 +493,7 @@ Start is refused while \code{estop} or \code{localization} hold.
 \subsection{Controller parameters}
 
 \input{generated/params_controllers}
+
+\subsection{Docking parameters}
+
+\input{generated/params_docking}

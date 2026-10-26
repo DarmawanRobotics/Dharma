@@ -13,6 +13,10 @@ versions follow [SemVer](https://semver.org).
   `docking/dock` works on the simulator (mall_loop: `charging_dock` on the west wall).
 - Bringup argument `fiducials_detector` (`apriltag` | `aruco`): ArUco markers through
   dharma_perception's `aruco_detector_node`, same TF frames.
+- Manual: docking and charging (tag geometry, dock estimate, control law, states, the field
+  clearance), the ArUco detector, the simulator's dock, the macOS dev container; reference
+  tables regenerated (they also lacked the 0.2 guard and field parameters). Paper: docking in
+  the architecture and the limitations, still 8 pages. PDFs rebuilt.
 
 ### Changed
 

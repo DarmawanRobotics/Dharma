@@ -96,6 +96,28 @@ both now come from the profile.
     (Section~\ref{sec:two-channel}).
 \end{itemize}
 
+\section{ArUco markers}
+\label{sec:aruco}
+
+\code{aruco_detector_node} is the drop-in for \code{apriltag_ros} when the site uses printed
+ArUco markers (\code{fiducials_detector:=aruco}); it reads the same throttled camera. It detects
+the markers of \param{ids} in \param{dictionary} with OpenCV's \code{cv2.aruco} (the APIs of
+OpenCV 4.2 on Foxy and of 4.7 and later), estimates each pose from the four corners with
+\code{solvePnP} (IPPE\_SQUARE, edge length \param{sizes}) and broadcasts
+$\T{camera}{tag}$ under the image's frame at the image stamp. OpenCV's marker frame ($x$ right,
+$y$ up, $z$ toward the viewer) is turned by $\pi$ about $z$ into the convention of
+\code{apriltag_ros} and of the site tag files ($z$ toward the viewer, $x$ to its left, $y$
+down),
+\begin{equation}
+  \T{camera}{tag} = \T{camera}{marker}\,\operatorname{diag}(-1, -1, 1, 1),
+\end{equation}
+so localization and docking take either detector and a site's \code{tags.json} works with both.
+Poses beyond \param{max_distance} are dropped. Images are read as mono8, rgb8, bgr8, rgba8 or
+bgra8 straight from \code{sensor_msgs/Image} (row padding handled, no \code{cv_bridge}). The
+default publishes marker 4 of \code{DICT_4X4_50} (15~cm) as \frm{charging_dock}, the frame
+docking uses (Section~\ref{sec:docking}). A 15~cm marker at 1.2~m gives the plate normal to a
+few degrees in the synthetic-image test; docking smooths it over detections.
+
 \section{Nodes and parameters}
 
 \begin{center}
@@ -107,7 +129,9 @@ both now come from the profile.
     \topic{perception/sector_scan}, \topic{perception/safety_scan}, \topic{perception/obstacles}
     out \\
   \code{apriltag_throttle} & camera image and info in, image at \code{rate_hz} out \\
-  \code{apriltag} (\code{apriltag_ros}) & tag frames on TF for localization \\
+  \code{apriltag} (\code{apriltag_ros}) & tag frames on TF for localization and docking \\
+  \code{aruco_detector_node} & ArUco markers on the throttled camera as TF frames, same
+    convention (\code{fiducials_detector:=aruco}) \\
   \bottomrule
 \end{tabularx}
 \end{center}

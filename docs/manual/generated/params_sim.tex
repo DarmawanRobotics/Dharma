@@ -22,6 +22,7 @@ Parameter & Default & Unit & Range & Description \\
 \code{obstacle_height} & 1.7 & m & 0.01..5 & sim/obstacles height \\
 \code{battery_start}$^\dagger$ & 0.9 &  & 0..1 & charge at start \\
 \code{battery_drain_per_hour}$^\dagger$ & 0.2 &  & 0..10 & charge lost per hour \\
+\code{charge_per_hour}$^\dagger$ & 1 &  & 0..100 & charge gained per hour on the dock \\
 \code{initial_pose_hz}$^\dagger$ & 1 & Hz & 0..10 & /initialpose at the true pose while localization is NONE; 0: off \\
 \code{lio_odom_frame}$^\dagger$ & \code{camera_init} &  &  & FAST-LIO world frame \\
 \code{lio_body_frame}$^\dagger$ & \code{body} &  &  & FAST-LIO body frame (the IMU) \\
@@ -48,5 +49,15 @@ Parameter & Default & Unit & Range & Description \\
 \code{latency.lidar_sec}$^\dagger$ & 0.05 & s & 0..1 & cloud age \\
 \code{latency.odometry_sec}$^\dagger$ & 0.01 & s & 0..1 & pose age \\
 \code{latency.command_sec}$^\dagger$ & 0.02 & s & 0..1 & cmd\_\allowbreak{}vel delay \\
+\code{camera.rate_hz}$^\dagger$ & 10 & Hz & 0..60 & detections per second (0: off) \\
+\code{camera.tags}$^\dagger$ & [\code{charging_dock}] &  &  & world tags the detector publishes on TF \\
+\code{camera.mount_xyz}$^\dagger$ & [0.3, 0, 0.25] & m &  & camera in base\_\allowbreak{}link \\
+\code{camera.yaw_deg}$^\dagger$ & 0 & deg & -180..180 & 0: forward, 180: rear camera \\
+\code{camera.fov_deg}$^\dagger$ & 80 & deg & 1..180 & horizontal field of view \\
+\code{camera.range_min}$^\dagger$ & 0.25 & m & 0..10 & closer the tag fills the image \\
+\code{camera.range_max}$^\dagger$ & 4 & m & 0.1..50 & detection range \\
+\code{camera.max_incidence_deg}$^\dagger$ & 70 & deg & 1..89 & a plate seen more obliquely: lost \\
+\code{camera.noise_m}$^\dagger$ & 0.003 & m & 0..0.5 & position noise \\
+\code{camera.noise_deg}$^\dagger$ & 0.5 & deg & 0..20 & yaw noise \\
 \end{longtable}
 \end{small}
