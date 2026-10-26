@@ -14,6 +14,7 @@ versions follow [SemVer](https://semver.org).
 
 ### Added
 
+- `scripts/dev.sh doctor`: Docker, compose, memory, CPUs, architecture and GitHub access.
 - Foxy support next to Humble and Jazzy: dev container (`dev-foxy`, ports 5903 / 6082 on
   localhost, `.devcontainer/foxy/`), `scripts/dev.sh --distro foxy`, `scripts/setup.sh` on
   Ubuntu 20.04 (distribution from `/opt/ros` or the Ubuntu release; loguru from pip there).
@@ -48,6 +49,14 @@ versions follow [SemVer](https://semver.org).
   `GroupAction(forwarding=False)` there: the scope unsets the bringup's arguments).
 - `test_init_project` registers the module before running it (dataclasses with postponed
   annotations).
+
+### Fixed
+
+- macOS dev container: `scripts/dev.sh build` and `test` failed on the bash 3.2 of macOS in an
+  interactive terminal (an empty array under `set -u`); `dev.sh` imports the stack with plain
+  git when vcstool is missing; the image builds with a host gid that the image already has
+  (macOS gid 20, `dialout` in Ubuntu) and on Linux the container user gets the caller's uid /
+  gid by default.
 
 ## [0.2.0] - 2026-10-23
 

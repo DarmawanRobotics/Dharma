@@ -21,6 +21,23 @@ scripts/dev.sh vnc       # desktop: vnc://localhost:5901 or http://localhost:608
 Foxy, Humble and Jazzy run side by side (`--distro foxy`: ports 5903 / 6082, `--distro jazzy`:
 5902 / 6081) with separate build, install and log volumes. VS Code: _Reopen in Container_.
 
+**On a Mac** (Apple Silicon or Intel), the same commands:
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or OrbStack, or
+   colima with `--vm-type vz --mount-type virtiofs`) and give it **at least 8 GB of memory**
+   and 4+ CPUs (_Settings > Resources_): FAST-LIO and PCL need it to compile.
+2. Give git access to the private repositories: `gh auth login` (or an SSH key on GitHub).
+3. `scripts/dev.sh doctor` checks Docker, compose, memory, the architecture and GitHub access.
+4. `scripts/dev.sh up`, `build`, `test`, `shell` as above. The images build natively for
+   arm64 (the ROS images are multi-arch): no Rosetta / qemu emulation. vcstool is optional,
+   `dev.sh` imports with plain git without it, and it runs on the bash 3.2 of macOS.
+5. The desktop: `scripts/dev.sh vnc` opens Screen Sharing (password `dharma`), or use
+   noVNC in a browser at http://localhost:6080/vnc.html. RViz renders in software.
+
+The workspace is bind-mounted (edit with any Mac editor); `build/`, `install/` and `log/` live
+in Docker volumes, so colcon never builds on the slower shared file system. Low on memory:
+`scripts/dev.sh build --parallel-workers 1`.
+
 **Natively** (Ubuntu 20.04 + Foxy, 22.04 + Humble or 24.04 + Jazzy, also on the robot computer):
 
 ```bash

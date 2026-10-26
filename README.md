@@ -85,6 +85,7 @@ git add -A && git commit -m "chore: init from the Dharma template"
 **Dev container** (Linux / macOS, no local ROS needed):
 
 ```bash
+scripts/dev.sh doctor              # Docker, memory, architecture, GitHub access (macOS: start here)
 scripts/dev.sh up                  # imports the stack into src/, builds the image, starts it
 scripts/dev.sh build               # colcon build (humble; --distro foxy|jazzy for the others)
 scripts/dev.sh test
@@ -94,7 +95,10 @@ scripts/dev.sh vnc                 # the desktop: vnc://localhost:5901 or noVNC 
 
 Foxy, Humble and Jazzy run side by side (`--distro foxy`: ports 5903 / 6082, `--distro jazzy`:
 5902 / 6081), each with its own build, install and log volumes. VS Code: _Reopen in Container_
-(`.devcontainer/`, `.devcontainer/foxy/`).
+(`.devcontainer/`, `.devcontainer/foxy/`). **macOS** (Apple Silicon or Intel): Docker Desktop,
+OrbStack or colima with at least 8 GB of memory; the images build natively for arm64, vcstool
+is optional and `dev.sh` runs on the bash 3.2 of macOS; see
+[Getting Started](docs/guide/Getting-Started.md#1-get-the-workspace).
 
 **Natively** (Ubuntu 20.04 + Foxy, 22.04 + Humble or 24.04 + Jazzy, also the robot computer):
 
@@ -122,13 +126,13 @@ Details in the [package README](src/robot_bringup/README.md).
 
 ## Scripts
 
-| Script                    |                                                                                                                 |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `scripts/dev.sh`          | dev container: `up`, `shell`, `build`, `test`, `vnc`, `down`, `clean`, `import`; `--distro foxy\|humble\|jazzy` |
-| `scripts/setup.sh`        | robot / dev machine: `check`, `install ros tools repos livox rosdep build service`                              |
-| `scripts/start_tmux.sh`   | tmux session with one window per subsystem (`robot` or `sim` layout in `scripts/tmux/`)                         |
-| `scripts/init_project.py` | turn the template into a product                                                                                |
-| `scripts/sync_tooling.sh` | maintainers: copy `tooling/` (lint configuration, per-repository CI) into every `dharma_*` checkout             |
+| Script                    |                                                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/dev.sh`          | dev container: `up`, `shell`, `build`, `test`, `vnc`, `down`, `clean`, `import`, `doctor`; `--distro foxy\|humble\|jazzy` |
+| `scripts/setup.sh`        | robot / dev machine: `check`, `install ros tools repos livox rosdep build service`                                        |
+| `scripts/start_tmux.sh`   | tmux session with one window per subsystem (`robot` or `sim` layout in `scripts/tmux/`)                                   |
+| `scripts/init_project.py` | turn the template into a product                                                                                          |
+| `scripts/sync_tooling.sh` | maintainers: copy `tooling/` (lint configuration, per-repository CI) into every `dharma_*` checkout                       |
 
 ## Docs
 
