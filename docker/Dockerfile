@@ -74,9 +74,12 @@ RUN apt-get update \
         --skip-keys "livox_ros_driver2 fast_lio legkilo python3-loguru" \
     && rm -rf /var/lib/apt/lists/* /tmp/src
 
-# User with the host's uid (the noble images already have uid 1000: ubuntu)
+# User with the host's uid (the noble images already have uid 1000: ubuntu). A gid the image
+# already has is reused (macOS: gid 20 is staff there, dialout here).
 RUN if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu || true; fi \
-    && groupadd --gid "${USER_GID}" "${USERNAME}" \
+    && if ! getent group "${USER_GID}" > /dev/null; then groupadd --gid "${USER_GID}" "${USERNAME}"; fi \
+    && taken=$(getent passwd "${USER_UID}" | cut -d: -f1) \
+    && if [ -n "$taken" ] && [ "${USER_UID}" != 0 ]; then userdel -r "$taken" || true; fi \
     && useradd --uid "${USER_UID}" --gid "${USER_GID}" -m -s /bin/bash "${USERNAME}" \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${USERNAME}" \
     && chmod 0440 "/etc/sudoers.d/${USERNAME}" \
@@ -87,7 +90,7 @@ RUN if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu || true; fi \
         '[ -f "$WS/install/setup.bash" ] && source "$WS/install/setup.bash"' \
         'f=/usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash; [ -f "$f" ] && source "$f"' \
         'cd "$WS"' >> "/home/${USERNAME}/.bashrc" \
-    && chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}"
+    && chown -R "${USER_UID}:${USER_GID}" "/home/${USERNAME}"
 
 # XFCE: no compositor (useless over VNC, slows software-rendered RViz)
 RUN mkdir -p "/home/${USERNAME}/.config/xfce4/xfconf/xfce-perchannel-xml" \
@@ -99,10 +102,10 @@ RUN mkdir -p "/home/${USERNAME}/.config/xfce4/xfconf/xfce-perchannel-xml" \
         '  </property>' \
         '</channel>' \
         > "/home/${USERNAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml" \
-    && chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}/.config"
+    && chown -R "${USER_UID}:${USER_GID}" "/home/${USERNAME}/.config"
 
-COPY --chown=${USERNAME}:${USERNAME} docker/colcon_defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
-COPY --chown=${USERNAME}:${USERNAME} docker/tmux/tmux.conf /home/${USERNAME}/.tmux.conf
+COPY --chown=${USER_UID}:${USER_GID} docker/colcon_defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
+COPY --chown=${USER_UID}:${USER_GID} docker/tmux/tmux.conf /home/${USERNAME}/.tmux.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 
 USER ${USERNAME}
