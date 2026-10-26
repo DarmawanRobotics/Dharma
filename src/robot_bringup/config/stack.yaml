@@ -19,3 +19,14 @@ health_monitor_node:
       expected: [""]
     degradation:
       rules: ["sensor:/livox/lidar=0.5", "sensor:/Odometry=0.5", "tf:*=0.5"]
+
+docking_node:
+  ros__parameters:
+    # Docking onto the charger (docking/dock, docking/undock): the dock tag on TF from the
+    # fiducial detector, the docked pose in front of it and the driver's Trigger services.
+    tag.frame: charging_dock # apriltag tag 4 (dharma_perception), or the ArUco detector's frame
+    goal.distance: 0.75 # m, base_link to the tag when docked (measure it on the dock)
+    hooks.sit: [""] # e.g. /robot/sit
+    hooks.charge: [""] # e.g. /robot/charge/start
+    hooks.stop_charge: [""] # e.g. /robot/charge/stop
+    hooks.stand: [""] # e.g. /robot/stand

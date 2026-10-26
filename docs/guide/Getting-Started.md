@@ -70,6 +70,17 @@ ros2 topic echo /navigation/status
 ros2 service call /control/estop/engage std_srvs/srv/Trigger
 ```
 
+Dock and charge: the robot drives to the dock (its tag `charging_dock` is on the west wall of
+the mall), centres on the tag, walks in, sits down and charges, then undocks
+([Navigation](Navigation.md#docking-and-charging)):
+
+```bash
+ros2 service call /planner/go_to dharma_interfaces/srv/GoTo "{x: -4.3, y: 0.0, yaw: 3.14}"
+ros2 service call /docking/dock std_srvs/srv/Trigger
+ros2 topic echo /docking/status            # ... APPROACHING, SITTING, CHARGING, DOCKED
+ros2 service call /docking/undock std_srvs/srv/Trigger
+```
+
 Add people with a scenario (`scenario:=person_crossing`) or by hand:
 
 ```bash

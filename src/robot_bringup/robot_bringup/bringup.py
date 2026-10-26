@@ -53,6 +53,14 @@ def resolve_odometry(value: str) -> str:
     return method
 
 
+def resolve_detector(value: str) -> str:
+    """Return the tag detector: apriltag or aruco."""
+    detector = (value or 'apriltag').strip().lower()
+    if detector not in ('apriltag', 'aruco'):
+        raise BringupError(f'fiducials_detector: {value!r}, use apriltag or aruco')
+    return detector
+
+
 def resolve_site(value: str) -> str:
     """Return a site name, or '' for the one in the parameter files (or the last one)."""
     site = str(value).strip()

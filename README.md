@@ -31,18 +31,18 @@ repository made from this template: its bringup package, its robot profile and i
 
 One repository per part, all at version 0.2.0, listed in [dharma.repos](dharma.repos):
 
-| Repository                                                                     |                                                                                                             |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| [dharma_utils](https://github.com/DarmawanRobotics/dharma_utils)               | math, typed configuration, the robot profile, the braking model, file IO, grids, `DharmaNode`, test helpers |
-| [dharma_interfaces](https://github.com/DarmawanRobotics/dharma_interfaces)     | typed status messages, sector scans, waypoints and the services of the stack                                |
-| [dharma_odometry](https://github.com/DarmawanRobotics/dharma_odometry)         | FAST-LIO / Leg-KILO (or an external estimator) behind a still-start gate, and the odometry monitor          |
-| [dharma_localization](https://github.com/DarmawanRobotics/dharma_localization) | gravity-aligned odometry bridge, fiducial-anchored SE(2) EKF over `map -> odom`, scan matching              |
-| [dharma_perception](https://github.com/DarmawanRobotics/dharma_perception)     | LiDAR to front (avoidance) and 360° (safety) sector scans, fail-safe when blind; AprilTag throttle          |
-| [dharma_mapping](https://github.com/DarmawanRobotics/dharma_mapping)           | occupancy grids per site, crash-safe maps, sites (map, fiducials, routes), route recorder                   |
-| [dharma_navigation](https://github.com/DarmawanRobotics/dharma_navigation)     | planner, route loader, path follower, obstacle avoidance; **dharma_control**: the safety mux                |
-| [dharma_health](https://github.com/DarmawanRobotics/dharma_health)             | sensor rates and stamp ages, TF ages, stack states and the computer as one `HealthStatus`                   |
-| [dharma_rviz](https://github.com/DarmawanRobotics/dharma_rviz)                 | RViz panels and the robot layout                                                                            |
-| [dharma_sim](https://github.com/DarmawanRobotics/dharma_sim)                   | software-in-the-loop robot: kinematic body, ray-cast Mid-360, drifting odometry, scenarios                  |
+| Repository                                                                     |                                                                                                                    |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| [dharma_utils](https://github.com/DarmawanRobotics/dharma_utils)               | math, typed configuration, the robot profile, the braking model, file IO, grids, `DharmaNode`, test helpers        |
+| [dharma_interfaces](https://github.com/DarmawanRobotics/dharma_interfaces)     | typed status messages, sector scans, waypoints and the services of the stack                                       |
+| [dharma_odometry](https://github.com/DarmawanRobotics/dharma_odometry)         | FAST-LIO / Leg-KILO (or an external estimator) behind a still-start gate, and the odometry monitor                 |
+| [dharma_localization](https://github.com/DarmawanRobotics/dharma_localization) | gravity-aligned odometry bridge, fiducial-anchored SE(2) EKF over `map -> odom`, scan matching                     |
+| [dharma_perception](https://github.com/DarmawanRobotics/dharma_perception)     | LiDAR to front (avoidance) and 360° (safety) sector scans, fail-safe when blind; AprilTag throttle, ArUco detector |
+| [dharma_mapping](https://github.com/DarmawanRobotics/dharma_mapping)           | occupancy grids per site, crash-safe maps, sites (map, fiducials, routes), route recorder                          |
+| [dharma_navigation](https://github.com/DarmawanRobotics/dharma_navigation)     | planner, route loader, path follower, obstacle avoidance, docking and charging; **dharma_control**: the safety mux |
+| [dharma_health](https://github.com/DarmawanRobotics/dharma_health)             | sensor rates and stamp ages, TF ages, stack states and the computer as one `HealthStatus`                          |
+| [dharma_rviz](https://github.com/DarmawanRobotics/dharma_rviz)                 | RViz panels and the robot layout                                                                                   |
+| [dharma_sim](https://github.com/DarmawanRobotics/dharma_sim)                   | software-in-the-loop robot: kinematic body, ray-cast Mid-360, drifting odometry, scenarios                         |
 
 [external.repos](external.repos) adds the Livox driver and FAST-LIO (and optionally Leg-KILO).
 

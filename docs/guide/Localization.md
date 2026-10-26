@@ -39,8 +39,11 @@ again.
 
 A site's map frame is the frame its tags were recorded in: a tag in view puts the robot back on
 that map wherever it starts. Any detector works that puts the tag frames under the camera optical
-frame on TF (`apriltag_ros` with a throttled camera today, started by the bringup with
-`fiducials:=true`).
+frame on TF: `apriltag_ros` with a throttled camera (the bringup's `fiducials:=true`), or
+dharma_perception's `aruco_detector_node` for printed ArUco markers
+(`fiducials_detector:=aruco`; `aruco_detector_node` `dictionary`, `ids`, `frames`, `sizes`).
+Both publish the same tag convention (z toward the viewer, x to its left, y down), so a site's
+tags file works with either.
 
 ```bash
 ros2 service call /localization/load_tags dharma_interfaces/srv/LoadFile "{path: lobby/tags.json, create: true}"
