@@ -52,11 +52,14 @@ ros2 launch my_robot_bringup sim.launch.py rviz:=true
 
 ## 5. On the robot
 
-1. Measure the braking limits ([Robot Profile](Robot-Profile.md#measure-the-braking-limits)).
-2. Map the first site, record its tags, teach a route ([Mapping and Sites](Mapping-and-Sites.md)).
-3. `ros2 launch my_robot_bringup robot.launch.py site:=<site>`; for boot,
+1. One clock for every stamp: chrony for the computers and PTP for the LiDAR
+   ([Troubleshooting](Troubleshooting.md#time-synchronisation)):
+   `TIME_SERVERS=<server> TIME_ALLOW=<subnet> LIDAR_IP=<ip> scripts/setup.sh install timesync ptp`.
+2. Measure the braking limits ([Robot Profile](Robot-Profile.md#measure-the-braking-limits)).
+3. Map the first site, record its tags, teach a route ([Mapping and Sites](Mapping-and-Sites.md)).
+4. `ros2 launch my_robot_bringup robot.launch.py site:=<site>`; for boot,
    `scripts/setup.sh install service` installs a systemd unit running the bringup.
-4. Pin the Dharma release tags in `dharma.repos` once the robot works.
+5. Pin the Dharma release tags in `dharma.repos` once the robot works.
 
 ## 6. Add features
 

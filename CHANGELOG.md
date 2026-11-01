@@ -7,6 +7,12 @@ versions follow [SemVer](https://semver.org).
 
 ### Added
 
+- Time synchronisation: `scripts/timesync.sh` (also `scripts/setup.sh install timesync ptp`).
+  chrony makes the system clock follow `TIME_SERVERS` and serves the robot's other computers
+  (`TIME_ALLOW`); `ptp4l` as PTP master on the LiDAR's interface (`LIDAR_IP` / `PTP_IFACE`)
+  makes a Mid-360 stamp with the same clock. `check` reports the offset and the PTP master.
+  The robot's `config/stack.yaml` turns on health's `clock:ntp` check (off in `sim.yaml`).
+  Troubleshooting has a time synchronisation section.
 - Docking and charging: dharma_navigation's `docking_node` in the bringup (centre on the dock
   tag, walk in, sit, start charging, undock); `config/stack.yaml` has its hook placeholders for
   the robot driver, `config/sim.yaml` points them at dharma_sim's dock station, so
