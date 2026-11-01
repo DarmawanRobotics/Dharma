@@ -15,9 +15,13 @@
 #   rosdep   the system dependencies of every package under src/
 #   build    colcon build of the workspace
 #   service  a systemd unit running `ros2 launch robot_bringup robot.launch.py` at boot
+#   timesync chrony: the system clock follows TIME_SERVERS and serves the robot's computers in
+#            TIME_ALLOW (scripts/timesync.sh)
+#   ptp      the LiDAR (LIDAR_IP or PTP_IFACE) stamps with this computer's clock over PTP
 # Env: ROS_DISTRO (the one in /opt/ros, else the one of the Ubuntu release: 20.04 foxy,
 #      22.04 humble, 24.04 jazzy), LIVOX_SDK_REF (master), BUILD_WORKERS / BUILD_JOBS (lower them
-#      when the build runs out of memory), SERVICE_NAME (robot_bringup), FORCE=1 (reinstall anyway)
+#      when the build runs out of memory), SERVICE_NAME (robot_bringup), FORCE=1 (reinstall anyway),
+#      TIME_SERVERS, TIME_ALLOW, LIDAR_IP, PTP_IFACE, PTP_TIMESTAMPING (see scripts/timesync.sh)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -45,7 +49,7 @@ SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 ENV_FILE="/etc/$SERVICE_NAME/robot.env"
 BUILD_STAMP="$ROOT/install/.build_commit"
 
-ALL=(ros tools repos livox rosdep build service)
+ALL=(ros tools repos livox rosdep build service timesync ptp)
 DEFAULT_INSTALL=(tools repos livox rosdep build)
 
 SUDO=$([[ "$(id -u)" -eq 0 ]] && echo "" || echo "sudo")
@@ -239,6 +243,17 @@ install_service() {
     $SUDO systemctl enable "$SERVICE_NAME.service"
     log "start: sudo systemctl restart $SERVICE_NAME   logs: journalctl -fu $SERVICE_NAME"
 }
+
+# One clock for every stamp: the system clock (chrony) and the LiDAR's (PTP), see timesync.sh.
+timesync_check() { # timesync_check <part>
+    local out
+    out=$("$ROOT/scripts/timesync.sh" check "$1") || { echo "${out#*: }"; return 1; }
+    echo "${out#*: }"
+}
+check_timesync() { timesync_check chrony; }
+install_timesync() { "$ROOT/scripts/timesync.sh" install chrony; }
+check_ptp() { timesync_check ptp; }
+install_ptp() { "$ROOT/scripts/timesync.sh" install ptp; }
 
 # ---------------------------------------------------------------- driver
 

@@ -28,6 +28,23 @@ for TF, the likely cause. Then the status topics: `odometry/status`, `localizati
 | map tilted, floor seen as obstacles      | the odometry started tilted: `odometry/status` `DEGRADED`; restart standing still and level (`wait_still`)      |
 | `odometry/status` `LOST` after a restart | expected for `hold_sec`; localization re-levels and needs a tag or a pose estimate again                        |
 
+## Time synchronisation
+
+Every stamp must come from one clock: the LiDAR's points, the IMU, the camera, the odometry, TF
+and the events a product sends to its server. `scripts/timesync.sh` (also `scripts/setup.sh
+install timesync ptp`) sets it up on a robot computer:
+
+| Part       | What it does                                                                                                                                                                                                                 | Settings                                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `timesync` | chrony replaces systemd-timesyncd: the system clock follows the time servers and serves the robot's other computers (`local stratum 10`: also without internet). The robot's other computers point their chrony at this one. | `TIME_SERVERS` (empty: the distribution's pool), `TIME_ALLOW` (subnets served) |
+| `ptp`      | `ptp4l` as PTP master (UDPv4, E2E) on the interface of the LiDAR: a Livox Mid-360 then stamps its points with this computer's clock. Hardware timestamps add `phc2sys` (the interface clock follows the system clock).       | `LIDAR_IP` / `LIVOX_IP` or `PTP_IFACE`, `PTP_TIMESTAMPING` (software)          |
+
+`scripts/timesync.sh check` reports the offset to the time source (at most `TIME_MAX_OFFSET`,
+0.05 s) and whether the PTP master runs. On the robot, health watches the same with
+`clock.enabled: true` (`clock:ntp`), and a LiDAR that still runs on its own clock shows as a
+sensor stamp in the future or a steady TF delay (`steady (source clock offset?)`). In a container
+both are the host's job.
+
 ## TF latency: diagnosis in ten minutes
 
 The follower stops when the robot pose (`map -> base_link`) is older than
@@ -49,14 +66,14 @@ plus 20–80 ms of processing: 0.15–0.35 s in total).
 5. **Repeat standing still and driving.** A constant offset is a clock problem, an age that grows
    while moving is load.
 
-| Cause                             | Fix                                                                                                                                                       |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LiDAR clock not synchronized      | PTP for the Mid-360 (`ptp4l` as master on the NIC connected to the LiDAR, `phc2sys` if needed); without PTP, restamp in the driver with a nominal latency |
-| two computers' clocks differ      | chrony with one computer as server, `makestep` at boot                                                                                                    |
-| CPU load or thermal throttling    | fewer or lighter nodes, `/tf` load down (joint states at most 30 Hz or on their own topic), real-time priority for the estimator                          |
-| an edge stops for a while         | estimator start (the still gate holds it) or respawn; `odometry/status`                                                                                   |
-| mixed `use_sim_time`              | only in simulation or bag replay: `ros2 param get <node> use_sim_time` for every node                                                                     |
-| camera stamps on the device clock | let the driver use the host clock (RealSense: global time)                                                                                                |
+| Cause                             | Fix                                                                                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LiDAR clock not synchronized      | `scripts/setup.sh install ptp`: `ptp4l` as PTP master on the LiDAR's interface (see below); without PTP, restamp in the driver with a nominal latency |
+| two computers' clocks differ      | `scripts/setup.sh install timesync` on each: chrony, one computer serving the others (see below)                                                      |
+| CPU load or thermal throttling    | fewer or lighter nodes, `/tf` load down (joint states at most 30 Hz or on their own topic), real-time priority for the estimator                      |
+| an edge stops for a while         | estimator start (the still gate holds it) or respawn; `odometry/status`                                                                               |
+| mixed `use_sim_time`              | only in simulation or bag replay: `ros2 param get <node> use_sim_time` for every node                                                                 |
+| camera stamps on the device clock | let the driver use the host clock (RealSense: global time)                                                                                            |
 
 The manual's health chapter has the latency budget in detail.
 
