@@ -105,6 +105,7 @@ is optional and `dev.sh` runs on the bash 3.2 of macOS; see
 ```bash
 scripts/setup.sh check                        # what is there, what is missing
 scripts/setup.sh install                      # tools, repos, livox, rosdep, build
+scripts/setup.sh install timesync ptp         # robot computer: one clock (chrony, LiDAR PTP)
 ros2 launch robot_bringup sim.launch.py       # the whole stack on the simulator
 ```
 

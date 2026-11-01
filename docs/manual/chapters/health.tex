@@ -162,7 +162,7 @@ dominates:
 
 \subsection{Fixes}
 
-\textbf{In the system (T1, T2).}
+\textbf{In the system (T1, T2)}, set up by \code{scripts/timesync.sh} (Section~\ref{sec:timesync}).
 \begin{itemize}
   \item PTP for the Mid-360: run \code{ptp4l} as master on the Jetson NIC connected to the LiDAR,
     with hardware timestamping when \texttt{ethtool -T} supports it, and \code{phc2sys} when the NIC
@@ -196,6 +196,36 @@ dominates:
 Reducing the \topic{/tf} load (joint states at most 30~Hz or on a separate topic; heavy Python
 nodes reading \topic{localization/pose} instead of the whole \topic{/tf}) and real-time priority
 with core isolation for the estimator help further.
+
+\section{Time synchronisation}
+\label{sec:timesync}
+
+Every stamp of the stack must come from one clock: the LiDAR's points, the IMU, the camera, the
+odometry, TF and the events a product sends to its server. The template's
+\code{scripts/timesync.sh} (also \texttt{scripts/setup.sh install timesync ptp}, copied into the
+products) sets it up on the robot computer:
+\begin{description}
+  \item[\code{timesync}] chrony replaces systemd-timesyncd. The system clock follows
+    \code{TIME_SERVERS} (empty: the distribution's pool) and serves the robot's other computers in
+    the subnets of \code{TIME_ALLOW}; \texttt{local stratum 10} keeps serving them without
+    internet. The robot's other computers point their own chrony at this one. Chrony~3 (Ubuntu
+    20.04) gets an \texttt{include} of \code{/etc/chrony/conf.d}; the install waits up to 30~s for
+    the first synchronisation.
+  \item[\code{ptp}] \code{ptp4l} as PTP master (UDPv4, end-to-end delay, \texttt{masterOnly} on
+    linuxptp~3, \texttt{serverOnly} on 4) on the interface of the LiDAR: \code{PTP_IFACE}, else the
+    interface that routes to \code{LIDAR_IP} (or \code{LIVOX_IP}). A Livox Mid-360 then stamps its
+    points with the host clock (T1). \code{PTP_TIMESTAMPING=hardware} adds \code{phc2sys}, so the
+    interface clock follows the system clock. Without a LiDAR address PTP is skipped; an address
+    that no interface routes to is reported.
+\end{description}
+\texttt{scripts/timesync.sh check} reports the offset to the time source (at most
+\code{TIME_MAX_OFFSET}, 50~ms) and whether the PTP master runs; in a container both are the host's
+job. The template's \code{config/stack.yaml} turns on the \code{clock:ntp} check on the robot
+(\code{sim.yaml} keeps it off), and a LiDAR still on its own clock shows as a sensor stamp in the
+future or a steady TF delay (above). A product that sends events to a server measures the
+remaining offset to the server's clock the NTP way, $\theta = \tfrac{1}{2}\big((t_1 - t_0) + (t_2 -
+t_3)\big)$ with round trip $\delta = (t_3 - t_0) - (t_2 - t_1)$, keeping the sample with the
+shortest $\delta$ (Pashupati's \code{telemetry.clock}).
 
 \section{Parameters}
 

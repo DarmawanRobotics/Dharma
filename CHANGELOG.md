@@ -12,7 +12,8 @@ versions follow [SemVer](https://semver.org).
   (`TIME_ALLOW`); `ptp4l` as PTP master on the LiDAR's interface (`LIDAR_IP` / `PTP_IFACE`)
   makes a Mid-360 stamp with the same clock. `check` reports the offset and the PTP master.
   The robot's `config/stack.yaml` turns on health's `clock:ntp` check (off in `sim.yaml`).
-  Troubleshooting has a time synchronisation section.
+  Troubleshooting has a time synchronisation section; Getting Started, Health and the README
+  point to it, and the manual has it in the health chapter (section 10.3). Manual PDF rebuilt.
 - Docking and charging: dharma_navigation's `docking_node` in the bringup (centre on the dock
   tag, walk in, sit, start charging, undock); `config/stack.yaml` has its hook placeholders for
   the robot driver, `config/sim.yaml` points them at dharma_sim's dock station, so
