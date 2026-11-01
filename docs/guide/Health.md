@@ -34,6 +34,10 @@ ros2 run rqt_robot_monitor rqt_robot_monitor
   clock offset of the source (`camera_init->body 1.8 s old, steady (source clock offset?)`),
   varying ages mean load, a stamp that stops advancing a stopped publisher. See
   [Troubleshooting](Troubleshooting.md).
+- **Clock.** `clock:ntp` runs with `clock.enabled: true`, which the template's
+  `config/stack.yaml` sets on the robot (`sim.yaml` turns it off). It needs chrony:
+  `scripts/setup.sh install timesync` (and `ptp` for the LiDAR), see
+  [Time synchronisation](Troubleshooting.md#time-synchronisation).
 - **Thermal zones** are read only when their type matches `system.thermal_zones` (CPU, GPU,
   junction, x86 package): some Jetson zones report bogus values.
 - **Nodes** are named fully qualified (`/robot/control_mux_node`); the bringup adds every node it

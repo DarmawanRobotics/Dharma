@@ -46,6 +46,13 @@ scripts/setup.sh install    # tools, repos, Livox SDK, rosdep, build
 source install/setup.bash
 ```
 
+On the robot computer, also put every stamp on one clock (chrony, PTP for the LiDAR; see
+[Time synchronisation](Troubleshooting.md#time-synchronisation)):
+
+```bash
+TIME_SERVERS=<server> TIME_ALLOW=<subnet> LIDAR_IP=<ip> scripts/setup.sh install timesync ptp
+```
+
 ## 2. Run on the simulator
 
 ```bash

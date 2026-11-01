@@ -311,8 +311,9 @@ from. It holds:
     images are multi-arch).
   \item[\code{scripts/setup.sh}] \texttt{check} or \texttt{install <components>} on a robot
     computer or a development machine: \code{ros}, \code{tools}, \code{repos}, \code{livox},
-    \code{rosdep}, \code{build} and \code{service} (a systemd unit running the bringup at boot);
-    Ubuntu 20.04 with Foxy, 22.04 with Humble or 24.04 with Jazzy.
+    \code{rosdep}, \code{build}, \code{service} (a systemd unit running the bringup at boot),
+    \code{timesync} and \code{ptp} (one clock for every stamp, \code{scripts/timesync.sh},
+    Section~\ref{sec:timesync}); Ubuntu 20.04 with Foxy, 22.04 with Humble or 24.04 with Jazzy.
   \item[\code{scripts/start_tmux.sh}] a tmux session with one window per subsystem from a YAML
     layout in \code{scripts/tmux/} (\code{robot} or \code{sim}).
   \item[\code{scripts/sync_tooling.sh}, \code{tooling/}] the canonical tooling files and their
