@@ -96,17 +96,23 @@ install_chrony() {
 
 # ---------------------------------------------------------------- PTP
 
+NO_LIDAR="no LiDAR address (LIDAR_IP / LIVOX_IP / PTP_IFACE)"
+
+# The LiDAR's interface: PTP_IFACE, else the one that routes to LIDAR_IP ("" without either).
 lidar_iface() {
     if [[ -n "$PTP_IFACE" ]]; then echo "$PTP_IFACE"; return 0; fi
-    [[ -n "$LIDAR_IP" ]] || return 1
-    ip route get "$LIDAR_IP" 2>/dev/null | awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }'
+    [[ -n "$LIDAR_IP" ]] || return 0
+    local iface
+    iface=$(ip route get "$LIDAR_IP" 2>/dev/null | awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }')
+    [[ -n "$iface" ]] || { echo "no interface routes to the LiDAR at $LIDAR_IP (set PTP_IFACE)" >&2; return 1; }
+    echo "$iface"
 }
 
 check_ptp() {
     if in_container; then echo "the host's job (container)"; return 0; fi
     local iface
-    iface=$(lidar_iface) || true
-    [[ -n "$iface" ]] || { echo "no LiDAR address (LIDAR_IP / LIVOX_IP / PTP_IFACE): skipped"; return 0; }
+    iface=$(lidar_iface 2>&1) || { echo "$iface"; return 1; }
+    [[ -n "$iface" ]] || { echo "$NO_LIDAR: skipped"; return 0; }
     command -v ptp4l >/dev/null || { echo "linuxptp not installed (LiDAR on $iface)"; return 1; }
     service is-active --quiet "$PTP_UNIT" || { echo "$PTP_UNIT not running (LiDAR on $iface)"; return 1; }
     echo "PTP master on $iface ($PTP_TIMESTAMPING timestamps)"
@@ -164,11 +170,8 @@ EOF
 install_ptp() {
     in_container && { echo "the host's job (container): nothing to do"; return 0; }
     local iface major
-    iface=$(lidar_iface) || true
-    if [[ -z "$iface" ]]; then
-        echo "no LiDAR address (LIDAR_IP / LIVOX_IP / PTP_IFACE): PTP skipped"
-        return 0
-    fi
+    iface=$(lidar_iface) || return 1
+    [[ -n "$iface" ]] || { echo "$NO_LIDAR: PTP skipped"; return 0; }
     case "$PTP_TIMESTAMPING" in
         software | hardware) ;;
         *) echo "PTP_TIMESTAMPING must be software or hardware" >&2; return 1 ;;

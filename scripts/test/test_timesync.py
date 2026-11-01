@@ -21,7 +21,7 @@ STUBS = {
     'chronyc': 'cat "$FAKE/tracking" 2>/dev/null || exit 1',
     'systemctl': 'echo "$*" >> "$FAKE/systemctl.log"\n'
     '[[ "$1" == is-active ]] && exit "$(cat "$FAKE/active" 2>/dev/null || echo 0)"\nexit 0',
-    'ip': 'echo "192.168.123.20 dev eth7 src 192.168.123.10 uid 0"',
+    'ip': '[[ -f "$FAKE/noroute" ]] || echo "192.168.123.20 dev eth7 src 192.168.123.10 uid 0"',
     'ptp4l': 'cat "$FAKE/ptp_version"',
 }
 
@@ -148,3 +148,12 @@ def test_without_a_lidar_address_ptp_is_skipped(rig):
 
 def test_unknown_part_is_refused(rig):
     assert run(rig, 'check', 'ntp').returncode == 2
+
+
+def test_a_lidar_address_without_a_route_is_reported(rig):
+    fake, _ = rig
+    (fake / 'noroute').write_text('')
+    for action in ('check', 'install'):
+        done = run(rig, action, 'ptp', LIDAR_IP='10.9.9.9')
+        assert done.returncode == 1
+        assert 'no interface routes to the LiDAR at 10.9.9.9' in done.stdout + done.stderr
