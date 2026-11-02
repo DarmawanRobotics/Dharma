@@ -174,13 +174,14 @@ export function transform(text, { src, dest, link, header, extraFrontMatter }) {
 function guideHeader(item) {
   return (meta) => {
     if (!meta.version) return ''
-    const pdf = item.pdf ? ` · [PDF](/files/${item.pdf})` : ''
+    const pdf = item.pdf ? `**Download:** [the printable PDF](/files/${item.pdf}), A5 for the phone.` : ''
     const out = [`<h1 class="doc-title">${meta.title ?? item.text}</h1>\n`]
     if (meta.subtitle) out.push(`<p class="doc-subtitle">${meta.subtitle}</p>\n`)
     out.push(`::: info Version ${meta.version}${meta.date ? ' · ' + meta.date : ''}`)
     if (meta.audience) out.push(meta.audience)
     if (meta.note) out.push('', meta.note)
-    out.push(`\n**Download:** this guide as a printable PDF${pdf}.`, ':::\n\n')
+    if (pdf) out.push('', pdf)
+    out.push(':::\n\n')
     return out.join('\n')
   }
 }
