@@ -15,7 +15,7 @@ hub of the stack and the template a robot product starts from.**
 [![Docker](https://img.shields.io/badge/dev-Docker%20%2B%20VNC-2496ED?logo=docker&logoColor=white)](compose.yaml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-[Repositories](#repositories) · [Architecture](#architecture) · [Quick start](#quick-start) ·
+[Docs site](https://darmawanrobotics.github.io/Dharma/) · [Repositories](#repositories) · [Architecture](#architecture) · [Quick start](#quick-start) ·
 [Bringup](#bringup) · [Scripts](#scripts) · [Guide](docs/guide/README.md) · [Manual (PDF)](docs/pdf/dharma_manual.pdf) · [Paper (PDF)](docs/pdf/dharma_paper.pdf)
 
 </div>

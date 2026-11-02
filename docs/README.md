@@ -2,6 +2,9 @@
 
 Everything here renders on GitHub (also in a private repository): the guide is plain Markdown,
 the manual and the paper are committed as PDFs.
+The same pages, with search and the PDFs, are the documentation site:
+[darmawanrobotics.github.io/Dharma](https://darmawanrobotics.github.io/Dharma/) (built from
+[site/](site/README.md)).
 
 | Read                                           |                                                                                                                                                                             |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
