@@ -7,6 +7,10 @@ versions follow [SemVer](https://semver.org).
 
 ### Added
 
+- Documentation site: `docs/site` builds the guide, the READMEs and the PDFs into a VitePress
+  site (search, dark mode, sidebar, edit links to the Markdown) published to GitHub Pages by
+  `.github/workflows/docs.yml`; the Markdown in the repository stays the one source. Products
+  copy the kit and set their own `site.config.mjs` and home page.
 - Time synchronisation: `scripts/timesync.sh` (also `scripts/setup.sh install timesync ptp`).
   chrony makes the system clock follow `TIME_SERVERS` and serves the robot's other computers
   (`TIME_ALLOW`); `ptp4l` as PTP master on the LiDAR's interface (`LIDAR_IP` / `PTP_IFACE`)

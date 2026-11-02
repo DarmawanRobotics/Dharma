@@ -61,7 +61,14 @@ ros2 launch my_robot_bringup sim.launch.py rviz:=true
    `scripts/setup.sh install service` installs a systemd unit running the bringup.
 5. Pin the Dharma release tags in `dharma.repos` once the robot works.
 
-## 6. Add features
+## 6. Documentation site
+
+`docs/site` builds the product's Markdown into a site on GitHub Pages
+([docs/site/README.md](../site/README.md)): list the product's pages in `site.config.mjs`, write
+its home page (`index.md`) and logo (`public/`), and turn Pages on once (Settings → Pages →
+Source: GitHub Actions).
+
+## 7. Add features
 
 Product features live in the product: new nodes that use the Dharma interfaces (e.g. call
 `planner/go_to`, listen to `navigation/stop_point` and answer the follower's inspection hook).
