@@ -1,18 +1,9 @@
-"""
-Measure the braking limits of a robot: reaction time and deceleration from step-to-zero runs.
+"""Measure the braking limits of a robot: reaction time and deceleration from step-to-zero runs."""
 
-    brake_test.py drive --speed 0.5 --out run1.csv      # on the robot (rclpy), through the mux
-    brake_test.py analyze run1.csv run2.csv ...         # anywhere (numpy only)
-    brake_test.py demo --out demo.csv                   # a run of the dharma_sim body model
-
-drive switches nothing: put the mux in REMOTE with the source first (control/set_mode). It sends
-zeros (re-arm), then the speed for --hold seconds, then zeros, on control/remote/<source>/cmd_vel
-at 50 Hz, and records the measured speed of an Odometry topic. Every CSV has the columns t (s),
-cmd and v (m/s, or rad/s with --axis angular; nan on the rows that only mark a command change).
-analyze fits the deceleration between 80 % and 20 % of the speed before the step; the reaction
-time is from the step command to where that line meets the speed before the step (it includes
-the mux, transport, the driver and the odometry).
-"""
+# brake_test.py drive --speed 0.5 --out run1.csv   on the robot (rclpy), mux in REMOTE first
+# brake_test.py analyze run1.csv run2.csv ...      anywhere (numpy only)
+# brake_test.py demo --out demo.csv                a run of the dharma_sim body model
+# The procedure and the analysis are in the manual (chapter 3, braking limits).
 
 from __future__ import annotations
 
@@ -50,7 +41,7 @@ def read_run(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 def write_run(path: Path, rows) -> None:
-    """Write (t, cmd, v) rows."""
+    """Write (t, cmd, v) rows: s, m/s or rad/s; v is nan on rows that mark a command change."""
     with path.open('w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['t', 'cmd', 'v'])
@@ -164,12 +155,7 @@ def drive(args) -> None:
         if cmd != state['cmd']:
             rows.append((elapsed, cmd, math.nan))  # the exact time of the change
         state['cmd'] = cmd
-        msg = Twist()
-        if angular:
-            msg.angular.z = state['cmd']
-        else:
-            msg.linear.x = state['cmd']
-        pub.publish(msg)
+        pub.publish(twist(Twist(), cmd, angular))
 
     node.create_subscription(Odometry, args.odom, on_odom, 50)
     state['t0'] = now()
@@ -183,9 +169,18 @@ def drive(args) -> None:
     write_run(args.out, rows)
 
 
+def twist(msg, value: float, angular: bool):
+    """Return msg (a geometry_msgs Twist) with value as its yaw rate or forward speed."""
+    if angular:
+        msg.angular.z = value
+    else:
+        msg.linear.x = value
+    return msg
+
+
 def main() -> int:
     """Parse the command line and run a subcommand."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
+    parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
     a = sub.add_parser('analyze', help='braking figures of recorded runs')
     a.add_argument('runs', nargs='+', type=Path)
