@@ -1,11 +1,4 @@
-"""
-Perception as lidar_sector_node runs it (v0.2), and the v0.1 rule for blind clouds (baseline).
-
-PerceptionV02 drives dharma_perception's SectorPipeline and adds the node's watchdog: no usable
-cloud for input.timeout_sec publishes every sector BLOCKED. PerceptionV01 is the baseline of the
-evaluation: a cloud with fewer than 100 raw points gave an all-zero safety scan (which the v0.1
-mux read as free) and nothing was published while no cloud arrived.
-"""
+"""Perception as lidar_sector_node runs it (v0.2) and the v0.1 blind-cloud rule (baseline)."""
 
 from __future__ import annotations
 

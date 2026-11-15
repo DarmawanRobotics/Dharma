@@ -1,11 +1,4 @@
-"""
-The control mux as control_mux_node runs it (v0.2), and the v0.1 field rules (baseline).
-
-MuxV02 drives dharma_control's Arbiter and Gate. MuxV01 keeps that arbitration and envelope
-and replaces the field by the v0.1 rules: sector centres below range_max are obstacle points,
-a point at the robot (a BLOCKED or zero range) is skipped, NaN sectors are free, a scan older
-than 0.5 s (receive time) stops AUTO, and the field is off in REMOTE (the v0.1 default).
-"""
+"""The control mux as control_mux_node runs it (v0.2), and the v0.1 field rules (baseline)."""
 
 from __future__ import annotations
 

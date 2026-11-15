@@ -1,14 +1,4 @@
-"""
-The navigation side as path_follower_node and obstacle_avoidance_node run it, as a rig driver.
-
-The follower core (dharma_navigation Follower) ticks at 20 Hz with the robot pose (the true
-pose by default: localization is not part of E1, E2, E4 and E5), the 360 deg safety scan, the
-measured twist, the mux state of control/status (e-stop, REMOTE, navigation armed) and the
-output of the reactive avoidance policy on the front scan, which the bringup always runs (its
-emergency stop holds the follower in every avoidance mode). The policy looks around the
-direction of travel of navigation's last command (backward while reversing on a 360 deg scan),
-as obstacle_avoidance_node does with control/nav_cmd_vel.
-"""
+"""Navigation as path_follower_node and obstacle_avoidance_node run it, as a rig driver."""
 
 from __future__ import annotations
 

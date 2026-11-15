@@ -1,14 +1,4 @@
-"""
-E3: localization error under seeded odometry drift, three estimators on the same runs.
-
-The follower drives three laps of the mall_loop route of dharma_sim (true pose, full rig) with
-the odometry drift of dharma_sim's drift scenario. Four tags hang at the corridor ends. On
-every run the same odometry, detections (5 Hz, 5 % outliers) and scans feed: hard replacement
-by every tag (the v0.1 rule, common.baseline), the gated EKF of dharma_localization with tags,
-and the EKF with tags and scan matching (1 Hz) on the site map dharma_sim draws from the
-world (the map the stack gets in simulation). Errors are
-sampled at 10 Hz against the true pose.
-"""
+"""E3: localization error under seeded odometry drift, three estimators on the same runs."""
 
 from __future__ import annotations
 
@@ -200,13 +190,18 @@ def run(seed: int, laps: int = LAPS) -> list[LocRow]:
     if seed == 1 and laps == LAPS:
         header = ('t_sec', 'odom_distance_m', *(f'{m}_error_m' for m in METHODS))
         write_rows('e3_errors_seed1', [dict(zip(header, v)) for v in series])
+    return loc_rows(seed, distance, errors, est.counts)
+
+
+def loc_rows(seed: int, distance: float, errors: dict, counts: dict) -> list[LocRow]:
+    """Return a row per estimator from its (position, heading) errors and its counts."""
     rows = []
     for method in METHODS:
         e = np.asarray(errors[method])
         rows.append(LocRow(
             method, seed, distance, float(np.sqrt(np.mean(e[:, 0] ** 2))), float(e[:, 0].max()),
             math.degrees(float(np.sqrt(np.mean(e[:, 1] ** 2)))), float(e[-1, 0]),
-            **est.counts[method],
+            **counts[method],
         ))  # fmt: skip
     return rows
 

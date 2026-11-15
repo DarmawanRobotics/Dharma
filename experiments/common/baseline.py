@@ -1,10 +1,4 @@
-"""
-Baseline of E3: the v0.1 localization rule, re-implemented here for the comparison.
-
-Every usable tag detection replaces map->odom with the one that puts the robot on the tag's
-map->base (flattened to x, y, yaw), unless map->odom itself would change by more than 0.5 m
-or 15 deg (v0.1 max_correction_m / max_correction_deg). No uncertainty is kept.
-"""
+"""Baseline of E3: the v0.1 localization rule, re-implemented here for the comparison."""
 
 from __future__ import annotations
 

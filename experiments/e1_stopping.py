@@ -1,16 +1,4 @@
-"""
-E1: stopping distance of the protective field against the braking model D(v).
-
-AUTO, a constant command stream at the follower rate (20 Hz) through the control mux. Once the
-robot cruises at v, a person (circle r = 0.25 m, 1.7 m high) appears on its axis, D(v) + m in
-front of the front edge (m = field.margin): the nearest appearance from which the model still
-promises a stop with the margin. Measured: the distance travelled from the first safety scan
-that shows the person to standstill, the smallest clearance of the footprint and the reaction
-time (appearance to the first braking of the body, against the model's t_r). Twice: with the
-field's default human_speed (0.5 m/s, ISO/TS 15066 separation: the field also keeps the distance
-a person walking toward the robot covers until it stands) and with human_speed 0 (the braking
-model alone).
-"""
+"""E1: stopping distance of the protective field against the braking model D(v)."""
 
 from __future__ import annotations
 
