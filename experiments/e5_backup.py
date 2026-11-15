@@ -1,17 +1,4 @@
-"""
-E5: backing up after the inspection at a stop point that faces a wall.
-
-The follower drives a 5.5 m route north, 0.9 m from the east wall of a room (full rig: 360 deg
-front and safety scans, path shift, the mux). Its stop point in the middle faces the wall
-(yaw 0, 0.5 m between the front edge and the wall) for a 5 s dwell. Conditions: none (no
-back-up, inspection.reverse_distance_m 0: the robot turns in place and goes on), free (backs up
-1 m, then rejoins the route 1 m past the stop) and person (the same while a person stands behind
-the robot, 0.5-1.5 m from its rear edge, who stepped in during the dwell). Nothing gives up on
-BLOCKED (a loaded route has no replanning: the follower waits, a join gives up after
-join.timeout_sec). Measured: completion and time (120 s limit), how far the robot backed up,
-how long it reported BLOCKED, the smallest clearance to the person and to the walls after the
-dwell.
-"""
+"""E5: backing up after the inspection at a stop point that faces a wall."""
 
 from __future__ import annotations
 

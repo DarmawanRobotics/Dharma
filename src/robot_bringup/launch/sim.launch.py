@@ -1,14 +1,11 @@
-"""
-The same stack on the simulated robot of dharma_sim (odometry external), no hardware.
+"""The same stack on the simulated robot of dharma_sim (odometry external), no hardware."""
 
-    ros2 launch robot_bringup sim.launch.py rviz:=true
-    ros2 launch robot_bringup sim.launch.py scenario:=person_crossing
-    ros2 topic pub --once /sim/obstacles geometry_msgs/msg/PoseArray \
-        "{poses: [{position: {x: 2.0, y: -3.0}}]}"
-
-The site (default mall_loop under /tmp/dharma_sim/sites) is drawn from the world when it has no
-map yet. config/sim.yaml adapts the stack to the simulator (PointCloud2 input, no camera).
-"""
+# ros2 launch robot_bringup sim.launch.py rviz:=true
+# ros2 launch robot_bringup sim.launch.py scenario:=person_crossing
+# ros2 topic pub --once /sim/obstacles geometry_msgs/msg/PoseArray \
+#     "{poses: [{position: {x: 2.0, y: -3.0}}]}"
+# A site without a map (default mall_loop under /tmp/dharma_sim/sites) is drawn from the world;
+# config/sim.yaml adapts the stack to the simulator (PointCloud2 input, no camera).
 
 from __future__ import annotations
 

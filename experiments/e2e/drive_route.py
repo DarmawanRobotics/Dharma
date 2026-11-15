@@ -1,18 +1,8 @@
-"""
-End-to-end check on the real nodes: drive a route of `ros2 launch robot_bringup sim.launch.py`.
+"""End-to-end check: drive the site's route on the real nodes of robot_bringup sim.launch.py."""
 
-Run it next to the launch (same ROS domain, workspace sourced):
-
-    ros2 launch robot_bringup sim.launch.py params_file:=experiments/e2e/sim_params.yaml
-    python3 experiments/e2e/drive_route.py
-
-It waits until localization is up, places standing people on the route (sim/obstacles, the
-simulator's default radius 0.25 m and height 1.7 m), loads the site's route
-(navigation/load_path), starts navigation and records the true pose (sim/ground_truth),
-navigation/status, control/status and sim/collision until the goal, a final state or the
-timeout. Written to results/e2e_sim.csv: completion, time, stops, smallest clearance to the
-people and to the walls, largest distance from the route, protective field states seen.
-"""
+# Next to the launch (same ROS domain, workspace sourced), as e2e/run.sh does:
+#   ros2 launch robot_bringup sim.launch.py params_file:=experiments/e2e/sim_params.yaml
+#   python3 experiments/e2e/drive_route.py
 
 from __future__ import annotations
 

@@ -1,13 +1,9 @@
-"""
-Generate the reference tables of the manual from the Dharma sources.
+"""Generate the reference tables of the manual from the Dharma sources."""
 
-    python3 docs/manual/tools/reference.py --src <dir with the dharma_* checkouts>
-
-Parameters come from the configuration dataclasses (dharma_utils.config.entries), so names,
-defaults, units, ranges and descriptions are exactly what the nodes declare. Messages and
-services come from dharma_interfaces/msg and srv. Output: docs/manual/generated/*.tex.
-Needs Python 3.10+ and numpy (the controller modules import it).
-"""
+# python3 docs/manual/tools/reference.py --src <dir with the dharma_* checkouts>
+# Parameters come from the configuration dataclasses (dharma_utils.config.entries), messages
+# and services from dharma_interfaces; output: docs/manual/generated/*.tex. Python 3.10+ and
+# numpy (the controller modules import it).
 
 from __future__ import annotations
 
@@ -241,7 +237,7 @@ def write_interfaces(src: Path):
 
 def main():
     """Parse arguments and write every generated file."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--src', required=True, type=Path, help='dir with dharma_* checkouts')
     args = parser.parse_args()
     for root in ROOTS:

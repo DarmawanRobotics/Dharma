@@ -81,22 +81,7 @@ def resolve(arg, sim: bool = False):
     if sim:
         files.append(share(PACKAGE, 'config', 'sim.yaml'))
     files.append(bringup.existing_file('params_file', arg('params_file')))
-    options = stack.Options(
-        robot_params=robot_params,
-        params_file='',
-        robot_ns=bringup.resolve_namespace(arg('robot_ns')),
-        odometry='external' if sim else bringup.resolve_odometry(arg('odometry')),
-        use_sim_time=arg('use_sim_time').strip(),
-        log_level=arg('log_level').strip() or 'info',
-        site=bringup.resolve_site(arg('site')),
-        sites_dir=os.path.expanduser(arg('sites_dir').strip()),
-        start_mapping=bringup.truthy(arg('start_mapping')),
-        fiducials=bringup.truthy(arg('fiducials')),
-        fiducials_detector=bringup.resolve_detector(arg('fiducials_detector')),
-        camera_image=arg('camera_image').strip(),
-        camera_info=arg('camera_info').strip(),
-        health=bringup.truthy(arg('health')),
-    )
+    options = _options(arg, robot_params, sim)
     if options.start_mapping and not options.site:
         raise bringup.BringupError('start_mapping:=true needs site:=<name>')
     data = bringup.merge_files(files)
@@ -122,14 +107,30 @@ def resolve(arg, sim: bool = False):
     return options, notes
 
 
-def isolated(actions: list) -> GroupAction:
-    """
-    Return actions in their own scope that the bringup's own arguments never reach.
+def _options(arg, robot_params: str, sim: bool) -> stack.Options:
+    """Return the validated bringup arguments (params_file is set once the files are merged)."""
+    return stack.Options(
+        robot_params=robot_params,
+        params_file='',
+        robot_ns=bringup.resolve_namespace(arg('robot_ns')),
+        odometry='external' if sim else bringup.resolve_odometry(arg('odometry')),
+        use_sim_time=arg('use_sim_time').strip(),
+        log_level=arg('log_level').strip() or 'info',
+        site=bringup.resolve_site(arg('site')),
+        sites_dir=os.path.expanduser(arg('sites_dir').strip()),
+        start_mapping=bringup.truthy(arg('start_mapping')),
+        fiducials=bringup.truthy(arg('fiducials')),
+        fiducials_detector=bringup.resolve_detector(arg('fiducials_detector')),
+        camera_image=arg('camera_image').strip(),
+        camera_info=arg('camera_info').strip(),
+        health=bringup.truthy(arg('health')),
+    )
 
-    Humble+ drops every caller configuration (forwarding=False). Foxy cannot, so the bringup's
-    argument names are also unset inside the scope (a no-op where they are already dropped):
-    an include sees only the arguments passed to it, on every distro.
-    """
+
+def isolated(actions: list) -> GroupAction:
+    """Return actions in their own scope that the bringup's own arguments never reach."""
+    # Humble+ drops every caller configuration (forwarding=False); Foxy cannot, so the bringup's
+    # argument names are unset inside the scope too: an include sees only its own arguments.
     hidden = [UnsetLaunchConfiguration(name) for name in (*ARGUMENTS, *SIM_ONLY)]
     return group([*hidden, *actions], scoped=True, forwarding=False)
 

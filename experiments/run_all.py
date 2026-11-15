@@ -1,10 +1,8 @@
-"""
-Run E1-E5 for every seed and write results/*.csv, then the paper's tables and figures.
+"""Run E1-E5 for every seed and write results/*.csv, then the paper's tables and figures."""
 
-    python3 experiments/run_all.py              # 20 seeds, every experiment (2 processes)
-    python3 experiments/run_all.py --seeds 2 e1 # quick look at one experiment
-    python3 experiments/run_all.py --report     # tables and figures from the committed CSVs
-"""
+# python3 experiments/run_all.py              20 seeds, every experiment (2 processes)
+# python3 experiments/run_all.py --seeds 2 e1 quick look at one experiment
+# python3 experiments/run_all.py --report     tables and figures from the committed CSVs
 
 from __future__ import annotations
 
@@ -56,7 +54,7 @@ def run(name: str, seeds, workers: int) -> float:
 
 def main():
     """Parse the arguments and run."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('experiments', nargs='*', default=sorted(EXPERIMENTS))
     parser.add_argument('--seeds', type=int, default=20, help='seeds 1..N per condition')
     parser.add_argument('--workers', type=int, default=min(2, os.cpu_count() or 1))

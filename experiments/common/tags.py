@@ -1,13 +1,4 @@
-"""
-Simulated fiducial detections: a forward camera, the tags of the world, noise and outliers.
-
-A tag is detected when it lies in the camera's field of view, faces the camera, is not hidden
-by a wall or pillar and is closer than max_range. The detection T_cam_tag gets the noise the
-localization assumes (dharma_localization TagNoise: position sigma1 d^2 / cos(view angle) per
-axis, heading sigma_psi1 d / cos(view angle) about the vertical); with outlier_rate it is an
-outlier instead: a heading error of 5-25 deg and a 0.1-0.4 m position error, like the pose
-ambiguity of a small planar tag.
-"""
+"""Simulated fiducial detections: a forward camera, the tags of the world, noise and outliers."""
 
 from __future__ import annotations
 

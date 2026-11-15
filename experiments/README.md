@@ -43,20 +43,86 @@ constant command stream) at 20 Hz; dharma_control's `Arbiter` and `Gate` (envelo
 protective field, `field.human_speed` 0.5 m/s as in the bringup) for every command and its
 watchdog at 50 Hz. The follower reads the mux state every tick as from `control/status`
 (e-stop, REMOTE, navigation armed: a disarmed follower streams neutral commands, which arm it),
-the measured twist, and the avoidance policy (`POLICIES.create(..., robot=)`) looks around the
-direction of travel of navigation's last command, as `obstacle_avoidance_node` does with
-`control/nav_cmd_vel`. E5 sets `front.fov_deg: 360` and `inspection.reverse_distance_m: 1.0`. The phases of the periodic
-tasks are drawn from the seed. Messages arrive when they are published; processing time is
-not modelled. Package defaults are used everywhere (the robot profile of
-`src/robot_bringup/config/robot.yaml`); the health speed scale and the planner's replanning are
-not in the loop, and localization is the true pose except in E3.
+the measured twist, the 360° safety scan and the output of the reactive avoidance policy on the
+front scan, which the bringup always runs (its emergency stop holds the follower in every
+avoidance mode). The policy (`POLICIES.create(..., robot=)`) looks around the direction of
+travel of navigation's last command (backward while reversing on a 360° scan), as
+`obstacle_avoidance_node` does with `control/nav_cmd_vel`. E5 sets `front.fov_deg: 360` and
+`inspection.reverse_distance_m: 1.0`. The phases of the periodic tasks are drawn from the seed.
+Messages arrive when they are published; processing time is not modelled. Package defaults are
+used everywhere (the robot profile of `src/robot_bringup/config/robot.yaml`); the health speed
+scale and the planner's replanning are not in the loop, and localization is the true pose
+except in E3.
 
-Baselines (clearly not stack code): `common/perception.py` `PerceptionV01` and
-`common/mux.py` `MuxV01` (v0.1: a blind cloud gives an all-zero safety scan, which the v0.1
-field skips as free; no perception watchdog; field off in REMOTE), `common/baseline.py`
-`HardReplace` (v0.1: every tag replaces map->odom unless map->odom moves by more than
-0.5 m / 15 deg). Tag detections are simulated in `common/tags.py` with the noise model the
-localization assumes plus 5 % outliers.
+Baselines (clearly not stack code):
+
+- `common/perception.py` `PerceptionV01`: a cloud with fewer than 100 raw points gives an
+  all-zero safety scan, and nothing is published while no cloud arrives (no watchdog;
+  `PerceptionV02` publishes every sector BLOCKED after `input.timeout_sec` without a usable
+  cloud, as `lidar_sector_node` does).
+- `common/mux.py` `MuxV01`: the v0.2 arbitration and envelope with the v0.1 field. Sector
+  centres below `range_max` are obstacle points, a point at the robot (a BLOCKED or zero range)
+  is skipped, NaN sectors are free, a scan older than 0.5 s (receive time) stops AUTO, and the
+  field is off in REMOTE (the v0.1 default).
+- `common/baseline.py` `HardReplace`: every usable tag replaces map->odom with the one that puts
+  the robot on the tag's map->base (flattened to x, y, yaw), unless map->odom would move by more
+  than 0.5 m or 15 deg (v0.1 `max_correction_m` / `max_correction_deg`); no uncertainty is kept.
+
+Tag detections are simulated in `common/tags.py`: a tag is detected when it lies in the
+camera's field of view, faces the camera, is not hidden by a wall or pillar and is closer than
+`max_range`. A detection gets the noise the localization assumes (dharma_localization
+`TagNoise`: position sigma1 d^2 / cos(view angle) per axis, heading sigma_psi1 d / cos(view
+angle) about the vertical); with `outlier_rate` (5 %) it is an outlier instead, a heading error
+of 5-25 deg and a 0.1-0.4 m position error, like the pose ambiguity of a small planar tag.
+
+## Protocols
+
+**E1 stopping distance** (`e1_stopping.py`). AUTO, a constant command stream at the follower
+rate (20 Hz) through the mux. Once the robot cruises at v, a person (circle r = 0.25 m, 1.7 m
+high) appears on its axis D(v) + m in front of the front edge (m = `field.margin`): the nearest
+appearance from which the model still promises a stop with the margin. Measured: the distance
+from the first safety scan that shows the person to standstill, the smallest clearance of the
+footprint and the reaction time (appearance to the first braking of the body, against the
+model's t_r). Twice: with the field's default `human_speed` (0.5 m/s, ISO/TS 15066 separation:
+the field also keeps the distance a person walking toward the robot covers until it stands) and
+with `human_speed` 0 (the braking model alone).
+
+**E2 blind LiDAR** (`e2_blind.py`). The robot drives straight at 0.5 m/s (AUTO: a command
+stream at 20 Hz; REMOTE: the operator source, re-armed by neutral commands first). After 5 s
+(plus a seeded phase) the LiDAR fails for 4 s: silent (no cloud at all, a dharma_sim dropout),
+empty (clouds without points) or sparse (50 points per cloud, below the 100 of the blindness
+check). Measured: AUTO, the time from the failure to the first zero command of the mux and the
+distance to standstill; REMOTE, the speed of the fastest point of the body once settled (1.5 s
+after the failure to its end).
+
+**E3 localization** (`e3_localization.py`). The follower drives three laps of dharma_sim's
+mall_loop route (true pose, full rig) with the odometry drift of the drift scenario; four tags
+hang at the corridor ends. Every run feeds the same odometry, detections (5 Hz, 5 % outliers)
+and scans to hard replacement by every tag (v0.1, `common/baseline.py`), the gated EKF of
+dharma_localization with tags, and the EKF with tags and scan matching (1 Hz) on the site map
+dharma_sim draws from the world (the map the stack gets in simulation). Errors are sampled at
+10 Hz against the true pose.
+
+**E4 path shift** (`e4_path_shift.py`). The follower drives a 20 m route along the centre of a
+3 m corridor (full rig: perception, follower, avoidance node, mux with its protective field);
+reactive avoidance is the VFH policy of the bringup. Per seed a person stands on the route at
+5-6.5 m, one beside it at 10-11.5 m, one walks the same way at 0.2 m/s from 13-14 m (once the
+robot passes 9 m) and one crosses at 17-18 m at 0.6 m/s (once the robot is 3 m before) and
+leaves. Layout `beside_route` puts both standing people 0.6-0.9 m beside the route, on opposite
+sides. Measured: the smallest clearance between the footprint and a person, the time to the goal
+(150 s limit), stops (below 0.05 m/s after above 0.15 m/s, before the goal) and the largest
+distance from the route.
+
+**E5 back-up** (`e5_backup.py`). The follower drives a 5.5 m route north, 0.9 m from the east
+wall of a room (full rig: 360° front and safety scans, path shift, the mux). Its stop point in
+the middle faces the wall (yaw 0, 0.5 m between the front edge and the wall) for a 5 s dwell.
+Conditions: none (no back-up, `inspection.reverse_distance_m` 0: the robot turns in place and
+goes on), free (backs up 1 m, then rejoins the route 1 m past the stop) and person (the same
+while a person who stepped in during the dwell stands 0.5-1.5 m behind the rear edge). Nothing
+gives up on BLOCKED (a loaded route has no replanning: the follower waits, a join gives up after
+`join.timeout_sec`). Measured: completion and time (120 s limit), how far the robot backed up,
+how long it reported BLOCKED, the smallest clearance to the person and to the walls after the
+dwell.
 
 ## End-to-end check
 
@@ -67,14 +133,19 @@ experiments/e2e/run.sh <workspace> [runs]   # launch, drive, stop; one row per r
 ```
 
 Each run starts `ros2 launch robot_bringup sim.launch.py params_file:=experiments/e2e/sim_params.yaml`
-and `e2e/drive_route.py`, which places two standing people on the mall route (`sim/obstacles`),
-loads and starts the route and writes `results/e2e_sim.csv`. `sim_params.yaml` only pins the
-route loader to `/tmp/dharma_sim/sites` (a run without it loads the route too). The committed
-CSV holds the run quoted in the paper, made after the first navigation and control fixes (Jazzy,
-workspace with every package at main then: dharma_navigation #11; not rerun on #13). Before the fixes the same setup completed in 78.6 s
-(2 stops) and an earlier run stayed BLOCKED at the second person (the path-shift deadlock).
-The start of a run can still race the follower's localization pause
-(`start failed: cannot start while localization holds`); the runs are not deterministic.
+and `e2e/drive_route.py`. It waits until localization is up, places two standing people on the mall
+route (`sim/obstacles`, the simulator's default radius 0.25 m and height 1.7 m), loads the site's
+route (`navigation/load_path`), starts navigation and records the true pose (`sim/ground_truth`),
+`navigation/status`, `control/status` and `sim/collision` until the goal, a final state or the
+timeout. `results/e2e_sim.csv` gets completion, time, stops, the smallest clearance to the people
+and to the walls, the largest distance from the route and the protective field states seen.
+`sim_params.yaml` only pins the route loader to `/tmp/dharma_sim/sites` (a run without it loads the
+route too). The committed CSV holds the run quoted in the paper, made after the first navigation
+and control fixes (Jazzy, workspace with every package at main then: dharma_navigation #11; not
+rerun on #13). Before the fixes the same setup completed in 78.6 s (2 stops) and an earlier run
+stayed BLOCKED at the second person (the path-shift deadlock). The start of a run can still race
+the follower's localization pause (`start failed: cannot start while localization holds`); the runs
+are not deterministic.
 
 ## Findings and fixes
 

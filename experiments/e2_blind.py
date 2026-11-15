@@ -1,13 +1,4 @@
-"""
-E2: blind LiDAR in AUTO and REMOTE, v0.2 against the v0.1 reading of a blind scan as free.
-
-The robot drives straight at 0.5 m/s (AUTO: a command stream at 20 Hz; REMOTE: the operator
-source, re-armed by neutral commands first). After 5 s (plus a seeded phase) the LiDAR fails
-for 4 s: silent (no cloud at all, a dharma_sim dropout), empty (clouds without points) or sparse
-(50 points per cloud, below the 100 of the blindness check). Measured: AUTO, the time from the
-failure to the first zero command of the mux and the distance to standstill; REMOTE, the speed
-of the fastest point of the body once settled (1.5 s after the failure to its end).
-"""
+"""E2: blind LiDAR in AUTO and REMOTE, v0.2 against the v0.1 reading of a blind scan as free."""
 
 from __future__ import annotations
 

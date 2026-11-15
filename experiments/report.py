@@ -1,10 +1,4 @@
-"""
-The paper's tables and figures from results/*.csv.
-
-Writes docs/paper/tables/e*.tex (the tabular environments that sections/evaluation.tex
-inputs), docs/paper/tables/results.tex (LaTeX macros for the numbers in the text) and
-docs/paper/figures/*.pdf (matplotlib, when it is installed).
-"""
+"""The paper's tables and figures from results/*.csv."""
 
 from __future__ import annotations
 

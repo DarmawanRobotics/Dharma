@@ -1,11 +1,4 @@
-"""
-Closed loop of the pure cores at the node rates: simulator, perception, control mux, a driver.
-
-One clock in ticks of 10 ms: physics at 100 Hz, LiDAR, perception and its watchdog at 10 Hz,
-the driver (follower or a command stream) at 20 Hz and the mux watchdog at 50 Hz, with phases
-drawn from the seed. Every message is delivered when it is published (no transport delay);
-the sensor and command latencies of the simulator apply.
-"""
+"""Closed loop of the pure cores at the node rates: simulator, perception, mux and a driver."""
 
 from __future__ import annotations
 

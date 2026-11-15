@@ -1,16 +1,4 @@
-"""
-E4: a corridor with standing and walking people; path shift, reactive avoidance, none.
-
-Reactive avoidance is the VFH policy of the bringup. The follower drives a 20 m route along
-the centre of a 3 m corridor (full rig: perception, follower, avoidance node, mux with its
-protective field). Per seed: a person stands on the
-route at 5-6.5 m, one beside it at 10-11.5 m, one walks the same way at 0.2 m/s from 13-14 m
-(once the robot passes 9 m) and one crosses at 17-18 m at 0.6 m/s (once the robot is 3 m
-before) and leaves. Layout beside_route puts both standing people 0.6-0.9 m beside the route,
-on opposite sides. Measured: smallest clearance between the footprint and a person, time to
-the goal (150 s limit), stops (speed below 0.05 m/s after above 0.15 m/s, before the goal) and
-the largest distance from the route.
-"""
+"""E4: a corridor with standing and walking people; path shift, reactive avoidance, none."""
 
 from __future__ import annotations
 

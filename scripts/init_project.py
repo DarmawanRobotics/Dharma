@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
-"""
-Turn the Dharma template into a robot product repository (run once, after "Use this template").
+"""Turn the Dharma template into a robot product repository (once, after "Use this template")."""
 
-    scripts/init_project.py --name MyRobot --package my_robot_bringup --robot-ns my_robot
-    scripts/init_project.py --name MyRobot --package my_robot_bringup --dry-run
-
-Renames the robot_bringup placeholder package everywhere, sets the robot namespace and the
-container names, removes what only the Dharma hub needs (tooling/, the tooling sync, this
-script, the manual, the paper, the diagram sources, the PDFs and the guide unless
---keep-docs), resets the version to 0.1.0 and rewrites README.md and CHANGELOG.md. Commit the
-result.
-"""
+# scripts/init_project.py --name MyRobot --package my_robot_bringup --robot-ns my_robot [--dry-run]
+# Renames the robot_bringup package everywhere, sets the robot namespace and the container
+# names, removes what only the hub needs (and the docs unless --keep-docs), resets the version
+# to 0.1.0 and rewrites README.md and CHANGELOG.md. Commit the result.
 
 from __future__ import annotations
 
@@ -234,7 +228,7 @@ def apply(root: Path, removals: list, changes: list) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     """Parse the arguments and convert the repository."""
-    parser = argparse.ArgumentParser(description=__doc__.split('\n\n')[0].strip())
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--name', required=True, help='CamelCase repository name (MyRobot)')
     parser.add_argument('--package', required=True, help='snake_case bringup package')
     parser.add_argument('--robot-ns', help='robot driver namespace (default: the name, snake)')
