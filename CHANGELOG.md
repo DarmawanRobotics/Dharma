@@ -30,16 +30,6 @@ versions follow [SemVer](https://semver.org).
   clearance), the ArUco detector, the simulator's dock, the macOS dev container; reference
   tables regenerated (they also lacked the 0.2 guard and field parameters). Paper: docking in
   the architecture and the limitations, still 8 pages. PDFs rebuilt.
-
-### Changed
-
-- Documentation as plain Markdown in the repository: the GitHub wiki pages moved to `docs/guide/`
-  with relative links and the diagram SVGs, so they render on GitHub (also in a private
-  repository); the MkDocs site, its Pages workflow and `make -C docs site` are removed.
-- The technical manual and the paper are committed as PDFs in `docs/pdf/` (`make -C docs pdf`).
-
-### Added
-
 - `scripts/dev.sh doctor`: Docker, compose, memory, CPUs, architecture and GitHub access.
 - Foxy support next to Humble and Jazzy: dev container (`dev-foxy`, ports 5903 / 6082 on
   localhost, `.devcontainer/foxy/`), `scripts/dev.sh --distro foxy`, `scripts/setup.sh` on
@@ -54,6 +44,12 @@ versions follow [SemVer](https://semver.org).
 
 ### Changed
 
+- Tidy-up: one-line docstrings; the experiment protocols moved to `experiments/README.md`,
+  the usage lines of the tools and launch files are comments. No change in behaviour.
+- Documentation as plain Markdown in the repository: the GitHub wiki pages moved to `docs/guide/`
+  with relative links and the diagram SVGs, so they render on GitHub (also in a private
+  repository); the MkDocs site, its Pages workflow and `make -C docs site` are removed.
+- The technical manual and the paper are committed as PDFs in `docs/pdf/` (`make -C docs pdf`).
 - Python 3.8: `from __future__ import annotations` everywhere, ruff `target-version = "py38"`
   (`tooling/`), no 3.9+ runtime features in the experiments and tools,
   `dharma_utils.math.default_rng` instead of `np.random.default_rng`.
@@ -75,9 +71,6 @@ versions follow [SemVer](https://semver.org).
   `GroupAction(forwarding=False)` there: the scope unsets the bringup's arguments).
 - `test_init_project` registers the module before running it (dataclasses with postponed
   annotations).
-
-### Fixed
-
 - macOS dev container: `scripts/dev.sh build` and `test` failed on the bash 3.2 of macOS in an
   interactive terminal (an empty array under `set -u`); `dev.sh` imports the stack with plain
   git when vcstool is missing; the image builds with a host gid that the image already has
