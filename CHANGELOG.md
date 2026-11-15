@@ -7,6 +7,8 @@ versions follow [SemVer](https://semver.org).
 
 ### Added
 
+- `dharma_console` in `dharma.repos`: menuconfig for a product's site and env files from the
+  nodes' typed parameters, and a live terminal monitor of the stack with a report file.
 - Documentation site: `docs/site` builds the guide, the READMEs and the PDFs into a VitePress
   site (search, dark mode, sidebar, edit links to the Markdown) published to GitHub Pages by
   `.github/workflows/docs.yml`; the Markdown in the repository stays the one source. Products
