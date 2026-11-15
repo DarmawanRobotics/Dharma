@@ -1,14 +1,11 @@
-"""
-The whole robot in one launch: the Dharma stack with this product's robot profile.
+"""The whole robot in one launch: the Dharma stack with this product's robot profile."""
 
-    ros2 launch robot_bringup robot.launch.py
-    ros2 launch robot_bringup robot.launch.py robot_driver:=my_robot_driver site:=lobby
-    ros2 launch robot_bringup robot.launch.py site:=lobby start_mapping:=true
-
-Every package launch gets robot_params:=config/robot.yaml and one parameter file merged from
-config/stack.yaml and params_file (later wins), with the started nodes added to the health
-monitor's nodes.expected. The composition itself is in robot_bringup/stack.py.
-"""
+# ros2 launch robot_bringup robot.launch.py
+# ros2 launch robot_bringup robot.launch.py robot_driver:=my_robot_driver site:=lobby
+# ros2 launch robot_bringup robot.launch.py site:=lobby start_mapping:=true
+# Every package launch gets robot_params:=config/robot.yaml and one parameter file merged from
+# config/stack.yaml and params_file (later wins), the started nodes in health's nodes.expected.
+# The composition is in robot_bringup/stack.py.
 
 from __future__ import annotations
 

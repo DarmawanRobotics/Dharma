@@ -1,10 +1,4 @@
-"""
-The composition of the Dharma stack: which package launch files start, with which arguments.
-
-This is the one place to adjust when a package's launch contract changes. Every package launch
-accepts params_file, robot_params, use_sim_time and log_level (DESIGN.md section 7); only
-non-empty arguments are passed, so an unset one never hides a value from a parameter file.
-"""
+"""The composition of the Dharma stack: which package launch files start, with which arguments."""
 
 from __future__ import annotations
 
@@ -86,7 +80,7 @@ def flag(value: bool) -> str:
 
 
 def common(o: Options) -> dict:
-    """Return the arguments every package launch accepts."""
+    """Return the arguments every package launch accepts (DESIGN.md section 7)."""
     return {
         'params_file': o.params_file,
         'robot_params': o.robot_params,
