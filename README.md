@@ -41,6 +41,7 @@ One repository per part, all at version 0.2.0, listed in [dharma.repos](dharma.r
 | [dharma_mapping](https://github.com/DarmawanRobotics/dharma_mapping)           | occupancy grids per site, crash-safe maps, sites (map, fiducials, routes), route recorder                          |
 | [dharma_navigation](https://github.com/DarmawanRobotics/dharma_navigation)     | planner, route loader, path follower, obstacle avoidance, docking and charging; **dharma_control**: the safety mux |
 | [dharma_health](https://github.com/DarmawanRobotics/dharma_health)             | sensor rates and stamp ages, TF ages, stack states and the computer as one `HealthStatus`                          |
+| [dharma_console](https://github.com/DarmawanRobotics/dharma_console)           | menuconfig for a product's site and env files, and a live terminal monitor with a report file                      |
 | [dharma_rviz](https://github.com/DarmawanRobotics/dharma_rviz)                 | RViz panels and the robot layout                                                                                   |
 | [dharma_sim](https://github.com/DarmawanRobotics/dharma_sim)                   | software-in-the-loop robot: kinematic body, ray-cast Mid-360, drifting odometry, scenarios                         |
 
